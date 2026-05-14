@@ -1,0 +1,32 @@
+export const initialReviews = [
+  {
+    id: 'rv1',
+    name: 'Sarah M.',
+    avatar: 'https://i.pravatar.cc/60?img=1',
+    rating: 5,
+    room: 'Executive Suite',
+    comment: 'Absolutely stunning hotel. The staff were incredibly attentive and the room was immaculate. The jacuzzi was the highlight of our stay!',
+    date: '2025-04-10',
+    verified: true,
+  },
+  {
+    id: 'rv2',
+    name: 'James K.',
+    avatar: 'https://i.pravatar.cc/60?img=3',
+    rating: 4,
+    room: 'Deluxe Double',
+    comment: 'Great location and beautiful interiors. Breakfast was exceptional. Minor issue was the WiFi speed but nothing that ruined the experience.',
+    date: '2025-03-28',
+    verified: true,
+  },
+  {
+    id: 'rv3',
+    name: 'Amina W.',
+    avatar: 'https://i.pravatar.cc/60?img=5',
+    rating: 5,
+    room: 'Garden Villa',
+    comment: 'The Garden Villa is worth every penny. Private pool, incredible service, and the food delivery to the villa was a game changer.',
+    date: '2025-03-15',
+    verified: true,
+  },
+]
