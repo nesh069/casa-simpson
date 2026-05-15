@@ -13,7 +13,18 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <CartProvider>
           <App />
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#1a1a2e',
+                color: '#f1f2f6',
+                border: '1px solid #2a2a3e',
+              },
+              success: { iconTheme: { primary: '#2ed573', secondary: '#1a1a2e' } },
+              error: { iconTheme: { primary: '#ff4757', secondary: '#1a1a2e' } },
+            }}
+          />
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

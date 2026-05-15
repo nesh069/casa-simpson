@@ -13,7 +13,7 @@ import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col bg-stone-50">
+    <div className="min-h-screen flex flex-col bg-[#0d0d1a]">
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -21,12 +21,14 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/rooms/:id" element={<RoomDetail />} />
-          <Route path="/restaurant" element={
-            <ProtectedRoute><Restaurant /></ProtectedRoute>
-          } />
-          <Route path="/delivery" element={
-            <ProtectedRoute><Delivery /></ProtectedRoute>
-          } />
+          <Route
+            path="/restaurant"
+            element={<ProtectedRoute><Restaurant /></ProtectedRoute>}
+          />
+          <Route
+            path="/delivery"
+            element={<ProtectedRoute><Delivery /></ProtectedRoute>}
+          />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
