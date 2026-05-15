@@ -7,6 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [1.0.0] - 2026-05-15
 
 ### Added
+
 - React Router v6 with protected routes for Restaurant and Delivery
 - Firebase Authentication — Email/Password, Google, GitHub, Phone OTP
 - Firestore data persistence for bookings, orders and reviews
