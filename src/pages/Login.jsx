@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
   signInWithEmailAndPassword,
@@ -23,23 +23,58 @@ export default function Login() {
   const [confirmResult, setConfirmResult] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const recaptchaRef = useRef(null)
+
+  // Clean up recaptcha on unmount
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear() } catch (e) { /* ignore */ }
+        window.recaptchaVerifier = null
+      }
+    }
+  }, [])
+
+  const getErrorMessage = (code) => {
+    const messages = {
+      'auth/email-already-in-use': 'An account with this email already exists. Try signing in instead.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/user-not-found': 'No account found with this email. Create one instead.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/invalid-credential': 'Invalid email or password. Please check and try again.',
+      'auth/weak-password': 'Password must be at least 6 characters long.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+      'auth/network-request-failed': 'Network error. Please check your connection.',
+      'auth/popup-closed-by-user': 'Sign-in popup was closed. Please try again.',
+      'auth/operation-not-allowed': 'This sign-in method is not enabled. Contact support.',
+      'auth/invalid-phone-number': 'Please enter a valid phone number with country code (e.g. +254...).',
+      'auth/missing-phone-number': 'Please enter your phone number.',
+      'auth/quota-exceeded': 'SMS quota exceeded. Please try again later.',
+      'auth/invalid-verification-code': 'Invalid OTP code. Please check and try again.',
+      'auth/code-expired': 'The OTP has expired. Please request a new one.',
+    }
+    return messages[code] || 'Something went wrong. Please try again.'
+  }
 
   const handleEmailAuth = async (e) => {
     e.preventDefault()
+    if (!email.trim()) { toast.error('Please enter your email'); return }
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return
+    }
     setLoading(true)
     try {
       if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password)
+        await createUserWithEmailAndPassword(auth, email.trim(), password)
         toast.success('Account created! Welcome to Casa Simpson.')
       } else {
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, email.trim(), password)
         toast.success('Welcome back!')
       }
       navigate('/')
     } catch (err) {
-      toast.error(
-        err.message.replace('Firebase: ', '').replace(/\(.*\)/, '').trim()
-      )
+      toast.error(getErrorMessage(err.code))
     } finally {
       setLoading(false)
     }
@@ -51,35 +86,49 @@ export default function Login() {
       toast.success(`Signed in with ${name}!`)
       navigate('/')
     } catch (err) {
-      toast.error(`${name} sign-in failed. Please try again.`)
+      if (err.code !== 'auth/popup-closed-by-user') {
+        toast.error(getErrorMessage(err.code))
+      }
     }
   }
 
   const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        'recaptcha-container',
-        { size: 'invisible' }
-      )
+    if (window.recaptchaVerifier) {
+      try { window.recaptchaVerifier.clear() } catch (e) { /* ignore */ }
+      window.recaptchaVerifier = null
     }
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      auth,
+      recaptchaRef.current,
+      { size: 'invisible' }
+    )
   }
 
   const handleSendOtp = async (e) => {
     e.preventDefault()
-    if (!phone) { toast.error('Please enter a phone number'); return }
+    const cleaned = phone.trim()
+    if (!cleaned) { toast.error('Please enter a phone number'); return }
+    if (!cleaned.startsWith('+')) {
+      toast.error('Include country code (e.g. +254 for Kenya)')
+      return
+    }
     setLoading(true)
     try {
       setupRecaptcha()
       const result = await signInWithPhoneNumber(
         auth,
-        phone,
+        cleaned,
         window.recaptchaVerifier
       )
       setConfirmResult(result)
       toast.success('OTP sent to your phone!')
     } catch (err) {
-      toast.error('Failed to send OTP. Check your number and try again.')
+      toast.error(getErrorMessage(err.code))
+      // Reset recaptcha on failure
+      if (window.recaptchaVerifier) {
+        try { window.recaptchaVerifier.clear() } catch (e) { /* ignore */ }
+        window.recaptchaVerifier = null
+      }
     } finally {
       setLoading(false)
     }
@@ -87,14 +136,14 @@ export default function Login() {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault()
-    if (!otp) { toast.error('Please enter the OTP'); return }
+    if (!otp || otp.length < 6) { toast.error('Please enter the 6-digit OTP'); return }
     setLoading(true)
     try {
       await confirmResult.confirm(otp)
       toast.success('Phone verified! Welcome to Casa Simpson.')
       navigate('/')
     } catch (err) {
-      toast.error('Invalid OTP. Please try again.')
+      toast.error(getErrorMessage(err.code))
     } finally {
       setLoading(false)
     }
@@ -102,6 +151,9 @@ export default function Login() {
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center px-4 bg-page">
+      {/* Recaptcha container - MUST be in the DOM */}
+      <div ref={recaptchaRef} id="recaptcha-container"></div>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="text-3xl font-bold font-['Poppins'] text-text">
@@ -118,7 +170,7 @@ export default function Login() {
             {['email', 'phone'].map((t) => (
               <button
                 key={t}
-                onClick={() => setTab(t)}
+                onClick={() => { setTab(t); setConfirmResult(null) }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold capitalize transition-all ${
                   tab === t
                     ? 'bg-brand text-white shadow-[0_0_10px_rgba(255,71,87,0.3)]'
@@ -206,78 +258,72 @@ export default function Login() {
                 <form onSubmit={handleVerifyOtp} className="space-y-4">
                   <p className="text-muted text-sm text-center">
                     Enter the 6-digit code sent to{' '}
-                    <span className="text-text font-semibold">{phone}</span>
+                    <span className="text-text font-medium">{phone}</span>
                   </p>
                   <input
                     type="text"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
                     maxLength={6}
-                    required
-                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text placeholder-muted text-center tracking-[0.5em] text-lg font-bold focus:outline-none focus:border-brand transition-colors"
+                    placeholder="000000"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full text-center text-2xl tracking-[0.5em] py-3 bg-surface border border-border rounded-xl text-text focus:outline-none focus:border-brand transition-colors"
                   />
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-brand hover:bg-brand-hover disabled:bg-border text-white font-bold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
+                    className="w-full bg-brand hover:bg-brand-hover disabled:bg-border text-white font-bold py-3 rounded-xl transition-all"
                   >
                     {loading ? 'Verifying...' : 'Verify OTP'}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setConfirmResult(null)}
-                    className="w-full text-muted text-sm hover:text-text transition-colors"
+                    onClick={() => { setConfirmResult(null); setOtp('') }}
+                    className="w-full text-muted hover:text-text text-sm py-2"
                   >
                     ← Change number
                   </button>
                 </form>
               )}
-              <div id="recaptcha-container" />
             </div>
           )}
 
+          {/* Social Logins */}
           {tab === 'email' && (
             <>
-              <div className="relative mb-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-card px-3 text-muted">
-                    or continue with
-                  </span>
-                </div>
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-[1px] bg-border" />
+                <span className="text-muted text-xs">or continue with</span>
+                <div className="flex-1 h-[1px] bg-border" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="flex gap-3 mb-6">
                 <button
                   onClick={() => handleSocialLogin(googleProvider, 'Google')}
-                  className="flex items-center justify-center gap-2 bg-surface border border-border hover:border-brand/40 py-3 rounded-xl transition-all text-text text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface border border-border rounded-xl text-sm text-text hover:border-brand/30 hover:bg-card transition-all"
                 >
-                  <FaGoogle className="text-brand" size={16} />
+                  <FaGoogle size={16} className="text-[#ff4757]" />
                   Google
                 </button>
                 <button
                   onClick={() => handleSocialLogin(githubProvider, 'GitHub')}
-                  className="flex items-center justify-center gap-2 bg-surface border border-border hover:border-brand/40 py-3 rounded-xl transition-all text-text text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface border border-border rounded-xl text-sm text-text hover:border-brand/30 hover:bg-card transition-all"
                 >
-                  <FaGithub className="text-text" size={16} />
+                  <FaGithub size={16} />
                   GitHub
                 </button>
               </div>
-
-              <p className="text-center text-sm text-muted">
-                {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-                <button
-                  onClick={() => setIsRegister(!isRegister)}
-                  className="text-brand font-semibold hover:underline"
-                >
-                  {isRegister ? 'Sign In' : 'Create one'}
-                </button>
-              </p>
             </>
           )}
+
+          <p className="text-center text-sm text-muted">
+            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button
+              onClick={() => setIsRegister(!isRegister)}
+              className="text-brand hover:underline font-semibold"
+            >
+              {isRegister ? 'Sign In' : 'Create Account'}
+            </button>
+          </p>
         </div>
       </div>
     </div>
