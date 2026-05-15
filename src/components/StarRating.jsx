@@ -8,7 +8,7 @@ export default function StarRating({ rating, onRate, size = 'md' }) {
           type="button"
           onClick={() => onRate && onRate(star)}
           className={`${sizes[size]} transition-transform ${
-            star <= rating ? 'text-[#ffa502]' : 'text-[#2a2a3e]'
+            star <= rating ? 'text-accent' : 'text-border'
           } ${onRate ? 'cursor-pointer hover:scale-125' : 'cursor-default'}`}
         >
           ★
