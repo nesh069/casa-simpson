@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react'
 import {
-  collection, addDoc, getDocs, deleteDoc,
-  doc, onSnapshot, serverTimestamp, query, orderBy
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  query,
+  orderBy,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -15,7 +21,8 @@ export function useCollection(collectionName) {
       collection(db, collectionName),
       orderBy('createdAt', 'desc')
     )
-    const unsubscribe = onSnapshot(q,
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
         const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
         setData(docs)
@@ -29,9 +36,9 @@ export function useCollection(collectionName) {
     return () => unsubscribe()
   }, [collectionName])
 
-  const addDocument = async (data) => {
+  const addDocument = async (docData) => {
     await addDoc(collection(db, collectionName), {
-      ...data,
+      ...docData,
       createdAt: serverTimestamp(),
     })
   }
