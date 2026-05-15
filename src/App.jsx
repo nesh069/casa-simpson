@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -10,10 +11,16 @@ import Restaurant from './pages/Restaurant'
 import Delivery from './pages/Delivery'
 import Reviews from './pages/Reviews'
 import NotFound from './pages/NotFound'
+import { seedRooms, seedMenu } from './utils/seedFirestore'
 
 export default function App() {
+  useEffect(() => {
+    seedRooms()
+    seedMenu()
+  }, [])
+
   return (
-    <div className="min-h-screen flex flex-col bg-page">
+    <div className="min-h-screen flex flex-col bg-[#0d0d1a]">
       <Navbar />
       <main className="flex-1">
         <Routes>
