@@ -13,13 +13,10 @@ import Reviews from './pages/Reviews'
 import MyBookings from './pages/MyBookings'
 import BookingConfirmation from './pages/BookingConfirmation'
 import NotFound from './pages/NotFound'
-import { seedRooms, seedMenu } from './utils/seedFirestore'
 
 export default function App() {
-  useEffect(() => {
-    seedRooms()
-    seedMenu()
-  }, [])
+  // NOTE: Data seeding removed from client-side.
+  // Run seedFirestore.js manually via Node.js or Firebase CLI when setting up the project.
 
   return (
     <div className="min-h-screen flex flex-col bg-page">
@@ -53,4 +50,4 @@ export default function App() {
       <Footer />
     </div>
   )
-}// deploy trigger
+}

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
+import { BookingProvider } from './context/BookingContext'
 import { Toaster } from 'react-hot-toast'
 import App from './App'
 import './index.css'
@@ -12,8 +13,10 @@ createRoot(document.getElementById('root')).render(
     <HashRouter>
       <AuthProvider>
         <CartProvider>
-          <App />
-          <Toaster />
+          <BookingProvider>
+            <App />
+            <Toaster />
+          </BookingProvider>
         </CartProvider>
       </AuthProvider>
     </HashRouter>

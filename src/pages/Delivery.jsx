@@ -4,28 +4,22 @@ import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
-import DeliveryTracker from '../components/DeliveryTracker'
 import { FiPhone, FiShoppingCart } from 'react-icons/fi'
 import { formatCurrency } from '../utils/helpers'
 
 export default function Delivery() {
   const { user } = useAuth()
-  const { cartItems, cartTotal, cartCount, clearCart } = useCart()
-  const { data: menuItems, loading, error } = useCollection('menu', { ordered: false })
+  const { cartItems, cartTotal, cartCount, clearCart, loading: cartLoading } = useCart()
+  const { data: menuItems, loading: menuLoading, error } = useCollection('menu', { ordered: false })
 
   const [phone, setPhone] = useState('')
   const [showPayment, setShowPayment] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
-  const [deliveryStep, setDeliveryStep] = useState(1)
 
   const handleOrderSuccess = () => {
     setShowPayment(false)
     setOrderPlaced(true)
     clearCart()
-    const steps = [2, 3, 4]
-    steps.forEach((step, i) => {
-      setTimeout(() => setDeliveryStep(step), (i + 1) * 3000)
-    })
     toast.success('Order placed successfully!')
   }
 
@@ -64,7 +58,7 @@ export default function Delivery() {
           </p>
         </div>
 
-        {/* Order Placed — tracker view */}
+        {/* Order Confirmed View */}
         {orderPlaced ? (
           <div className="max-w-lg mx-auto">
             <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-10 text-center">
@@ -76,14 +70,11 @@ export default function Delivery() {
                 We'll call you at:{' '}
                 <span className="text-[#f1f2f6] font-semibold">{phone}</span>
               </p>
-              <p className="text-[#a4b0be] text-sm mb-8">
+              <p className="text-[#a4b0be] text-sm mb-6">
                 Our driver will contact you to confirm your location.
               </p>
-              <DeliveryTracker currentStep={deliveryStep} />
-              <p className="text-[#a4b0be] text-sm mt-6">
-                {deliveryStep < 4
-                  ? 'Your order is on its way...'
-                  : '🏠 Your order has been delivered!'}
+              <p className="text-[#a4b0be] text-sm">
+                Estimated delivery time: 30–45 minutes
               </p>
             </div>
           </div>
@@ -104,7 +95,7 @@ export default function Delivery() {
                 </div>
               )}
 
-              {loading ? (
+              {menuLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map((n) => (
                     <div
@@ -159,7 +150,11 @@ export default function Delivery() {
 
                 {/* Cart summary */}
                 <div className="border-t border-[#2a2a3e] pt-5">
-                  {cartCount > 0 ? (
+                  {cartLoading ? (
+                    <div className="text-center py-8 text-[#a4b0be]">
+                      <p className="text-sm">Loading your cart...</p>
+                    </div>
+                  ) : cartCount > 0 ? (
                     <>
                       <div className="flex items-center gap-2 mb-4">
                         <FiShoppingCart size={16} className="text-[#ff4757]" />
