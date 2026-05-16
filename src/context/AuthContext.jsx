@@ -1,8 +1,18 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { createContext, useState, useEffect, useContext } from 'react'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from 'firebase/auth'
 import { auth } from '../firebase'
 
-const AuthContext = createContext()
+export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -16,26 +26,57 @@ export function AuthProvider({ children }) {
     return () => unsubscribe()
   }, [])
 
-  const logout = () => signOut(auth)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-page flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted text-sm">Loading Casa Simpson...</p>
-        </div>
-      </div>
-    )
+  const register = (email, password) => {
+    return createUserWithEmailAndPassword(auth, email, password)
   }
 
-  return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password)
+  }
+
+  const logout = () => {
+    return signOut(auth)
+  }
+
+  const signInWithGoogle = () => {
+    const provider = new GoogleAuthProvider()
+    return signInWithPopup(auth, provider)
+  }
+
+  const signInWithGithub = () => {
+    const provider = new GithubAuthProvider()
+    return signInWithPopup(auth, provider)
+  }
+
+  const setupPhoneRecaptcha = (containerId) => {
+    return new RecaptchaVerifier(auth, containerId, {
+      size: 'invisible',
+    })
+  }
+
+  const signInWithPhone = (phoneNumber, appVerifier) => {
+    return signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+  }
+
+  const value = {
+    user,
+    loading,
+    register,
+    login,
+    logout,
+    signInWithGoogle,
+    signInWithGithub,
+    setupPhoneRecaptcha,
+    signInWithPhone,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
 }
