@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps   # <-- changed
+        run: npm ci --legacy-peer-deps
 
       - name: Create .env for tests
         run: |
@@ -71,7 +71,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps   # <-- changed
+        run: npm ci --legacy-peer-deps
 
       - name: Create .env from secrets
         run: |
@@ -86,6 +86,9 @@ jobs:
 
       - name: Build project
         run: npm run build
+
+      - name: Copy index.html to 404.html for SPA routing
+        run: cp ./dist/index.html ./dist/404.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
