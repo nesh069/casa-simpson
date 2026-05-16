@@ -1,5 +1,19 @@
+import { describe, it, expect } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { CartProvider, useCart } from '../context/CartContext'
+import { AuthProvider } from '../context/AuthContext'
+import { BrowserRouter } from 'react-router-dom'
+
+vi.mock('../firebase', () => ({ db: {} }))
+vi.mock('firebase/firestore', () => ({
+  doc: vi.fn(),
+  setDoc: vi.fn(),
+  deleteDoc: vi.fn(),
+  onSnapshot: vi.fn(() => () => {}),
+}))
+vi.mock('react-hot-toast', () => ({
+  default: { error: vi.fn(), success: vi.fn() },
+}))
 
 const mockItem = { id: 'm1', name: 'Bruschetta', price: 8 }
 
@@ -17,21 +31,35 @@ function TestComponent() {
   )
 }
 
+// Helper to wrap with both providers
+function renderWithProviders(ui) {
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          {ui}
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
+
 describe('CartContext', () => {
   it('starts with empty cart', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     expect(screen.getByTestId('count').textContent).toBe('0')
     expect(screen.getByTestId('total').textContent).toBe('0')
+    expect(screen.getByTestId('items').textContent).toBe('0')
   })
 
   it('adds item to cart', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     act(() => screen.getByText('Add').click())
     expect(screen.getByTestId('count').textContent).toBe('1')
   })
 
   it('increments quantity when same item added twice', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     act(() => screen.getByText('Add').click())
     act(() => screen.getByText('Add').click())
     expect(screen.getByTestId('count').textContent).toBe('2')
@@ -39,20 +67,20 @@ describe('CartContext', () => {
   })
 
   it('removes item from cart', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     act(() => screen.getByText('Add').click())
     act(() => screen.getByText('Remove').click())
     expect(screen.getByTestId('count').textContent).toBe('0')
   })
 
   it('calculates total correctly', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     act(() => screen.getByText('Add').click())
     expect(screen.getByTestId('total').textContent).toBe('8')
   })
 
   it('updates quantity correctly', () => {
-    render(<CartProvider><TestComponent /></CartProvider>)
+    renderWithProviders(<TestComponent />)
     act(() => screen.getByText('Add').click())
     act(() => screen.getByText('SetQty3').click())
     expect(screen.getByTestId('count').textContent).toBe('3')

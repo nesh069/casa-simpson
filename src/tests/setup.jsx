@@ -1,5 +1,9 @@
 import { vi } from 'vitest'
 import '@testing-library/jest-dom'
+import { render } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from '../context/AuthContext'
+import { CartProvider } from '../context/CartContext'
 
 // Mock Firebase before any imports
 vi.mock('../firebase', () => ({
@@ -33,12 +37,15 @@ vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => ({})),
   addDoc: vi.fn(() => Promise.resolve({ id: 'test-id' })),
   updateDoc: vi.fn(() => Promise.resolve()),
+  setDoc: vi.fn(() => Promise.resolve()),
+  deleteDoc: vi.fn(() => Promise.resolve()),
   query: vi.fn(() => ({})),
   where: vi.fn(() => ({})),
   orderBy: vi.fn(() => ({})),
   limit: vi.fn(() => ({})),
   onSnapshot: vi.fn(() => () => {}),
-  serverTimestamp: vi.fn(() => new Date())
+  serverTimestamp: vi.fn(() => new Date()),
+  runTransaction: vi.fn(() => Promise.resolve({ success: true }))
 }))
 
 // Mock react-hot-toast
@@ -63,4 +70,19 @@ window.matchMedia = window.matchMedia || function() {
     addListener: function() {},
     removeListener: function() {}
   }
+}
+
+// Custom render wrapper with all providers
+export function renderWithProviders(ui, options = {}) {
+  const AllProviders = ({ children }) => (
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          {children}
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  )
+
+  return render(ui, { wrapper: AllProviders, ...options })
 }

@@ -3,9 +3,7 @@ import { useAuth } from './AuthContext'
 import { db } from '../firebase'
 import {
   doc,
-  getDoc,
   setDoc,
-  updateDoc,
   deleteDoc,
   onSnapshot,
 } from 'firebase/firestore'
@@ -51,7 +49,6 @@ export function CartProvider({ children }) {
     return () => unsubscribe()
   }, [user])
 
-  // Save cart to Firestore whenever it changes
   const saveCart = async (items) => {
     if (!user) return
     const cartRef = doc(db, 'users', user.uid, 'cart', 'items')
@@ -59,11 +56,6 @@ export function CartProvider({ children }) {
   }
 
   const addToCart = async (item) => {
-    if (!user) {
-      toast.error('Please sign in to add items to your cart')
-      return
-    }
-
     const existing = cartItems.find((i) => i.id === item.id)
     let newItems
 
@@ -76,6 +68,8 @@ export function CartProvider({ children }) {
     }
 
     setCartItems(newItems)
+
+    if (!user) return  // guest cart lives in local state only
     await saveCart(newItems)
     toast.success(`${item.name} added to cart`)
   }
@@ -83,6 +77,7 @@ export function CartProvider({ children }) {
   const removeFromCart = async (itemId) => {
     const newItems = cartItems.filter((i) => i.id !== itemId)
     setCartItems(newItems)
+    if (!user) return
     await saveCart(newItems)
   }
 
@@ -96,6 +91,7 @@ export function CartProvider({ children }) {
       i.id === itemId ? { ...i, quantity } : i
     )
     setCartItems(newItems)
+    if (!user) return
     await saveCart(newItems)
   }
 
