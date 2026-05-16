@@ -18,28 +18,60 @@ export function useCollection(collectionName, options = {}) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    let q
-    try {
-      q = options.ordered === false
-        ? query(collection(db, collectionName))
-        : query(collection(db, collectionName), orderBy('createdAt', 'desc'))
-    } catch {
-      q = query(collection(db, collectionName))
-    }
+    let unsubscribe
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const docs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
-        setData(docs)
-        setLoading(false)
-      },
-      (err) => {
+    const setupListener = async () => {
+      try {
+        // Try ordered query first (for collections with createdAt)
+        if (options.ordered !== false) {
+          const orderedQuery = query(
+            collection(db, collectionName),
+            orderBy('createdAt', 'desc')
+          )
+          unsubscribe = onSnapshot(
+            orderedQuery,
+            (snapshot) => {
+              setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+              setLoading(false)
+            },
+            async () => {
+              // If orderBy fails (no createdAt field), fall back to unordered
+              const fallback = query(collection(db, collectionName))
+              unsubscribe = onSnapshot(
+                fallback,
+                (snapshot) => {
+                  setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+                  setLoading(false)
+                },
+                (err) => {
+                  setError(err.message)
+                  setLoading(false)
+                }
+              )
+            }
+          )
+        } else {
+          const fallback = query(collection(db, collectionName))
+          unsubscribe = onSnapshot(
+            fallback,
+            (snapshot) => {
+              setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
+              setLoading(false)
+            },
+            (err) => {
+              setError(err.message)
+              setLoading(false)
+            }
+          )
+        }
+      } catch (err) {
         setError(err.message)
         setLoading(false)
       }
-    )
-    return () => unsubscribe()
+    }
+
+    setupListener()
+    return () => unsubscribe && unsubscribe()
   }, [collectionName])
 
   const addDocument = async (docData) => {
