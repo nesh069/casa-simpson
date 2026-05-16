@@ -7,10 +7,10 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0d0d1a]">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#ff4757] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#a4b0be] text-sm">Loading...</p>
+          <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted text-sm">Loading...</p>
         </div>
       </div>
     )

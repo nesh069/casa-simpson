@@ -38,7 +38,6 @@ export default function Delivery() {
     setOrderPlaced(true)
     clearCart()
 
-    // Simulate delivery progress
     const steps = [1, 2, 3, 4]
     steps.forEach((step, i) => {
       setTimeout(() => setDeliveryStep(step), (i + 1) * 3000)
@@ -52,11 +51,6 @@ export default function Delivery() {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
-  }
-
-  // Handle Google Maps load error gracefully
-  if (loadError) {
-    console.error('Google Maps failed to load:', loadError)
   }
 
   return (
@@ -114,9 +108,14 @@ export default function Delivery() {
                   ))}
                 </div>
               ) : menuItems.length === 0 ? (
-                <div className="text-center py-12 text-[#a4b0be]">
+                <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-10 text-center">
                   <p className="text-4xl mb-3">🍽️</p>
-                  <p>Menu is currently unavailable. Please check back later.</p>
+                  <h3 className="text-lg font-semibold text-[#f1f2f6] mb-2">
+                    Menu is currently unavailable
+                  </h3>
+                  <p className="text-[#a4b0be] text-sm mb-4">
+                    Our menu items are being prepared. Please check back soon!
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

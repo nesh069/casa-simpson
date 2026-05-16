@@ -15,7 +15,7 @@ export default function Home() {
     : '4.9'
 
   return (
-    <div className="bg-[#0d0d1a]">
+    <div className="bg-page">
       {/* Hero */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <img
@@ -23,28 +23,28 @@ export default function Home() {
           alt="Casa Simpson Hotel"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-[#0d0d1a]" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/50 to-page" />
         <div className="relative text-center text-white px-4 max-w-3xl mx-auto">
-          <p className="text-[#ff4757] font-semibold tracking-widest uppercase text-sm mb-4">
+          <p className="text-brand font-semibold tracking-widest uppercase text-sm mb-4">
             Welcome to
           </p>
           <h1 className="text-5xl md:text-7xl font-bold font-['Poppins'] mb-6 leading-tight text-white">
             Casa{' '}
             <span
-              className="text-[#ff4757]"
+              className="text-brand"
               style={{ textShadow: '0 0 30px rgba(255,71,87,0.5)' }}
             >
               Simpson
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-[#a4b0be] mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl text-muted mb-10 leading-relaxed">
             Where luxury meets home. Experience world-class hospitality,
             fine dining, and unforgettable stays.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/rooms"
-              className="bg-[#ff4757] hover:bg-[#ff6b81] text-white font-bold px-8 py-4 rounded-xl transition-all text-lg hover:shadow-[0_0_25px_rgba(255,71,87,0.5)]"
+              className="bg-brand hover:bg-brand-hover text-white font-bold px-8 py-4 rounded-xl transition-all text-lg hover:shadow-[0_0_25px_rgba(255,71,87,0.5)]"
             >
               Book a Room
             </Link>
@@ -65,7 +65,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold font-['Poppins'] text-[#f1f2f6] mb-3">
               Everything You Need
             </h2>
-            <p className="text-[#a4b0be] max-w-xl mx-auto">
+            <p className="text-muted max-w-xl mx-auto">
               One platform for your entire stay — rooms, dining, delivery, and more.
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function Home() {
               <Link
                 key={f.title}
                 to={f.to}
-                className="bg-[#1a1a2e] border border-[#2a2a3e] hover:border-[#ff4757]/40 rounded-2xl p-6 text-center transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,71,87,0.1)] group block"
+                className="bg-card border border-border hover:border-brand/40 rounded-2xl p-6 text-center transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,71,87,0.1)] group block"
               >
                 <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
                   {f.icon}

@@ -36,14 +36,14 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-[#0d0d1a]/90 backdrop-blur-md border-b border-[#2a2a3e] sticky top-0 z-30">
+      <nav className="bg-page/90 backdrop-blur-md border-b border-border sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
             <Link to="/" className="flex items-center shrink-0">
-              <span className="text-xl font-bold text-[#f1f2f6] font-['Poppins']">
-                Casa <span className="text-[#ff4757]">Simpson</span>
+              <span className="text-xl font-bold text-text font-['Poppins']">
+                Casa <span className="text-brand">Simpson</span>
               </span>
             </Link>
 
@@ -66,11 +66,11 @@ export default function Navbar() {
               {/* Cart button */}
               <button
                 onClick={() => setCartOpen(true)}
-                className="relative p-2 hover:bg-[#1a1a2e] rounded-full transition-colors text-[#a4b0be] hover:text-[#f1f2f6]"
+                className="relative p-2 hover:bg-card rounded-full transition-colors text-muted hover:text-text"
               >
                 <FiShoppingCart size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#ff4757] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-[0_0_8px_rgba(255,71,87,0.6)]">
+                  <span className="absolute -top-1 -right-1 bg-brand text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-[0_0_8px_rgba(255,71,87,0.6)]">
                     {cartCount}
                   </span>
                 )}
@@ -80,7 +80,7 @@ export default function Navbar() {
               {user ? (
                 <div className="hidden md:flex items-center gap-2">
                   {/* User pill */}
-                  <div className="flex items-center gap-2 bg-[#1a1a2e] border border-[#2a2a3e] rounded-full px-3 py-1.5">
+                  <div className="flex items-center gap-2 bg-card border border-border rounded-full px-3 py-1.5">
                     {user.photoURL ? (
                       <img
                         src={user.photoURL}
@@ -88,9 +88,9 @@ export default function Navbar() {
                         className="w-6 h-6 rounded-full"
                       />
                     ) : (
-                      <FiUser size={14} className="text-[#a4b0be]" />
+                      <FiUser size={14} className="text-muted" />
                     )}
-                    <span className="text-sm font-medium text-[#f1f2f6] max-w-[100px] truncate">
+                    <span className="text-sm font-medium text-text max-w-25 truncate">
                       {user.displayName || user.email?.split('@')[0]}
                     </span>
                   </div>
@@ -101,8 +101,8 @@ export default function Navbar() {
                     title="My Bookings"
                     className={`p-2 rounded-full transition-colors ${
                       location.pathname === '/bookings'
-                        ? 'bg-[#ff4757]/20 text-[#ff4757]'
-                        : 'hover:bg-[#1a1a2e] text-[#a4b0be] hover:text-[#f1f2f6]'
+                        ? 'bg-brand/20 text-brand'
+                        : 'hover:bg-card text-muted hover:text-text'
                     }`}
                   >
                     <FiCalendar size={18} />
@@ -112,7 +112,7 @@ export default function Navbar() {
                   <button
                     onClick={handleLogout}
                     title="Logout"
-                    className="p-2 hover:bg-[#ff4757]/20 hover:text-[#ff4757] text-[#a4b0be] rounded-full transition-colors"
+                    className="p-2 hover:bg-brand/20 hover:text-brand text-muted rounded-full transition-colors"
                   >
                     <FiLogOut size={18} />
                   </button>
@@ -120,7 +120,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   to="/login"
-                  className="hidden md:inline-flex bg-[#ff4757] hover:bg-[#ff6b81] text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all hover:shadow-[0_0_15px_rgba(255,71,87,0.4)]"
+                  className="hidden md:inline-flex bg-brand hover:bg-brand-hover text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all hover:shadow-[0_0_15px_rgba(255,71,87,0.4)]"
                 >
                   Sign In
                 </Link>
@@ -129,7 +129,7 @@ export default function Navbar() {
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="md:hidden p-2 hover:bg-[#1a1a2e] rounded-full text-[#a4b0be] transition-colors"
+                className="md:hidden p-2 hover:bg-card rounded-full text-muted transition-colors"
               >
                 {menuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
               </button>
@@ -139,7 +139,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden bg-[#1a1a2e] border-t border-[#2a2a3e] px-4 py-4 space-y-1">
+          <div className="md:hidden bg-card border-t border-border px-4 py-4 space-y-1">
             {links.map((link) => (
               <Link
                 key={link.to}
@@ -147,15 +147,15 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className={`block text-sm py-2.5 px-3 rounded-lg transition-colors ${
                   location.pathname === link.to
-                    ? 'bg-[#ff4757]/10 text-[#ff4757] font-semibold'
-                    : 'text-[#a4b0be] hover:bg-[#12122a] hover:text-[#f1f2f6]'
+                    ? 'bg-brand/10 text-brand font-semibold'
+                    : 'text-muted hover:bg-surface hover:text-text'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
 
-            <div className="pt-2 border-t border-[#2a2a3e] mt-2 space-y-1">
+            <div className="pt-2 border-t border-border mt-2 space-y-1">
               {user ? (
                 <>
                   {/* User info row */}
@@ -167,11 +167,11 @@ export default function Navbar() {
                         className="w-7 h-7 rounded-full"
                       />
                     ) : (
-                      <div className="w-7 h-7 bg-[#ff4757]/20 rounded-full flex items-center justify-center">
-                        <FiUser size={14} className="text-[#ff4757]" />
+                      <div className="w-7 h-7 bg-brand/20 rounded-full flex items-center justify-center">
+                        <FiUser size={14} className="text-brand" />
                       </div>
                     )}
-                    <span className="text-sm text-[#a4b0be] truncate">
+                    <span className="text-sm text-muted truncate">
                       {user.displayName || user.email}
                     </span>
                   </div>
@@ -182,8 +182,8 @@ export default function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg transition-colors ${
                       location.pathname === '/bookings'
-                        ? 'bg-[#ff4757]/10 text-[#ff4757] font-semibold'
-                        : 'text-[#a4b0be] hover:bg-[#12122a] hover:text-[#f1f2f6]'
+                        ? 'bg-brand/10 text-brand font-semibold'
+                        : 'text-muted hover:bg-surface hover:text-text'
                     }`}
                   >
                     <FiCalendar size={15} />
@@ -193,7 +193,7 @@ export default function Navbar() {
                   {/* Logout mobile */}
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-[#ff4757] hover:bg-[#ff4757]/10 rounded-lg transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-brand hover:bg-brand/10 rounded-lg transition-colors"
                   >
                     <FiLogOut size={15} />
                     Logout
@@ -203,7 +203,7 @@ export default function Navbar() {
                 <Link
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="block text-sm bg-[#ff4757] text-white text-center py-2.5 rounded-xl font-semibold hover:bg-[#ff6b81] transition-colors"
+                  className="block text-sm bg-brand text-white text-center py-2.5 rounded-xl font-semibold hover:bg-brand-hover transition-colors"
                 >
                   Sign In
                 </Link>

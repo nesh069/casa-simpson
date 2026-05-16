@@ -21,21 +21,21 @@ export default function Rooms() {
   )
 
   return (
-    <div className="bg-[#0d0d1a] min-h-screen">
+    <div className="bg-page min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold font-['Poppins'] text-[#f1f2f6] mb-2">
+          <h1 className="text-4xl font-bold font-['Poppins'] text-text mb-2">
             Our Rooms
           </h1>
-          <p className="text-[#a4b0be]">
+          <p className="text-muted">
             {loading ? 'Loading...' : `${rooms.length} rooms available`}
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-6 mb-8 flex flex-wrap gap-6 items-end">
+        <div className="bg-card border border-border rounded-2xl p-6 mb-8 flex flex-wrap gap-6 items-end">
           <div>
-            <p className="text-sm font-semibold text-[#f1f2f6] mb-2">Room Type</p>
+            <p className="text-sm font-semibold text-text mb-2">Room Type</p>
             <div className="flex gap-2 flex-wrap">
               {TYPES.map((type) => (
                 <button
@@ -43,8 +43,8 @@ export default function Rooms() {
                   onClick={() => setActiveType(type)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-all ${
                     activeType === type
-                      ? 'bg-[#ff4757] text-white shadow-[0_0_12px_rgba(255,71,87,0.4)]'
-                      : 'bg-[#12122a] text-[#a4b0be] border border-[#2a2a3e] hover:border-[#ff4757]/40 hover:text-[#f1f2f6]'
+                      ? 'bg-brand text-white shadow-[0_0_12px_rgba(255,71,87,0.4)]'
+                      : 'bg-surface text-muted border border-border hover:border-brand/40 hover:text-text'
                   }`}
                 >
                   {type}
@@ -53,10 +53,10 @@ export default function Rooms() {
             </div>
           </div>
 
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-50">
             <p className="text-sm font-semibold text-[#f1f2f6] mb-2">
               Max Price:{' '}
-              <span className="text-[#ffa502]">${maxPrice}</span>/night
+              <span className="text-accent">${maxPrice}</span>/night
             </p>
             <input
               type="range"
@@ -65,7 +65,7 @@ export default function Rooms() {
               step={10}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-[#ff4757]"
+              className="w-full accent-brand"
             />
           </div>
 
@@ -75,9 +75,9 @@ export default function Rooms() {
               id="available"
               checked={showAvailable}
               onChange={(e) => setShowAvailable(e.target.checked)}
-              className="accent-[#ff4757] w-4 h-4"
+              className="accent-brand w-4 h-4"
             />
-            <label htmlFor="available" className="text-sm font-medium text-[#a4b0be] cursor-pointer">
+            <label htmlFor="available" className="text-sm font-medium text-muted cursor-pointer">
               Available only
             </label>
           </div>
@@ -86,13 +86,13 @@ export default function Rooms() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="bg-[#1a1a2e] rounded-2xl h-80 animate-pulse border border-[#2a2a3e]" />
+              <div key={n} className="bg-card rounded-2xl h-80 animate-pulse border border-border" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-[#a4b0be]">
+          <div className="text-center py-20 text-muted">
             <p className="text-6xl mb-4">🔍</p>
-            <p className="text-xl font-semibold text-[#f1f2f6]">No rooms found</p>
+            <p className="text-xl font-semibold text-text">No rooms found</p>
             <p className="text-sm mt-2">Try adjusting your filters</p>
           </div>
         ) : (
