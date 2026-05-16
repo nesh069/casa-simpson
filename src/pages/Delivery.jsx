@@ -1,180 +1,263 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth'
-import { auth, googleProvider, githubProvider } from '../firebase'
+import { useState } from 'react'
+import { useCart } from '../context/CartContext'
+import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
-import { FaGoogle, FaGithub } from 'react-icons/fa'
+import PaymentModal from '../components/PaymentModal'
+import DeliveryTracker from '../components/DeliveryTracker'
+import { FiPhone, FiShoppingCart } from 'react-icons/fi'
+import { formatCurrency } from '../utils/helpers'
 
-export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
+export default function Delivery() {
   const { user } = useAuth()
-  const from = location.state?.from?.pathname || '/'
+  const { cartItems, cartTotal, cartCount, clearCart } = useCart()
+  const { data: menuItems, loading, error } = useCollection('menu', { ordered: false })
 
-  const [isRegister, setIsRegister] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [showPayment, setShowPayment] = useState(false)
+  const [orderPlaced, setOrderPlaced] = useState(false)
+  const [deliveryStep, setDeliveryStep] = useState(1)
 
-  useEffect(() => {
-    if (user) navigate(from, { replace: true })
-  }, [user, navigate, from])
-
-  const handleEmailAuth = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      if (isRegister) {
-        await createUserWithEmailAndPassword(auth, email, password)
-        toast.success('Account created! Welcome to Casa Simpson.')
-      } else {
-        await signInWithEmailAndPassword(auth, email, password)
-        toast.success('Welcome back!')
-      }
-      navigate(from, { replace: true })
-    } catch (err) {
-      const msg = err.message
-        .replace('Firebase: ', '')
-        .replace(/\(auth\/.*\)\.?/, '')
-        .trim()
-      toast.error(msg)
-    } finally {
-      setLoading(false)
-    }
+  const handleOrderSuccess = () => {
+    setShowPayment(false)
+    setOrderPlaced(true)
+    clearCart()
+    const steps = [2, 3, 4]
+    steps.forEach((step, i) => {
+      setTimeout(() => setDeliveryStep(step), (i + 1) * 3000)
+    })
+    toast.success('Order placed successfully!')
   }
 
-  const handleSocialLogin = async (provider, name) => {
-    setLoading(true)
-    try {
-      await signInWithPopup(auth, provider)
-      toast.success(`Signed in with ${name}!`)
-      navigate(from, { replace: true })
-    } catch (err) {
-      toast.error(`${name} sign-in failed. Please try again.`)
-    } finally {
-      setLoading(false)
+  const handlePlaceOrder = () => {
+    if (!user) {
+      toast.error('Please sign in to place an order')
+      return
     }
+    if (!phone.trim()) {
+      toast.error('Please enter your phone number')
+      return
+    }
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length < 10) {
+      toast.error('Please enter a valid phone number (at least 10 digits)')
+      return
+    }
+    if (cartCount === 0) {
+      toast.error('Please add items to your cart first')
+      return
+    }
+    setShowPayment(true)
   }
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center px-4 bg-[#0d0d1a] py-10">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#0d0d1a] text-[#f1f2f6] pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-bold text-[#f1f2f6] font-['Poppins']">
-            Casa <span className="text-[#ff4757]">Simpson</span>
-          </Link>
-          <p className="text-[#a4b0be] mt-2">
-            {isRegister
-              ? 'Create your account to get started'
-              : 'Welcome back — sign in to continue'}
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold font-['Poppins'] text-[#f1f2f6] mb-2">
+            Food Delivery
+          </h1>
+          <p className="text-[#a4b0be] text-lg">
+            Order from our menu and get it delivered to you
           </p>
         </div>
 
-        <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl shadow-2xl p-8">
-          {/* Email / Password form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
-            <div className="relative">
-              <FiMail
-                className="absolute left-3 top-3.5 text-[#a4b0be]"
-                size={16}
-              />
-              <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pl-10 pr-4 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
-              />
-            </div>
-
-            <div className="relative">
-              <FiLock
-                className="absolute left-3 top-3.5 text-[#a4b0be]"
-                size={16}
-              />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password (min 6 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full pl-10 pr-10 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3.5 text-[#a4b0be] hover:text-[#f1f2f6] transition-colors"
-              >
-                {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] disabled:text-[#a4b0be] disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
-            >
-              {loading
-                ? 'Please wait...'
-                : isRegister
-                ? 'Create Account'
-                : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative mb-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#2a2a3e]" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-[#1a1a2e] px-3 text-[#a4b0be]">
-                or continue with
-              </span>
+        {/* Order Placed — tracker view */}
+        {orderPlaced ? (
+          <div className="max-w-lg mx-auto">
+            <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-10 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold font-['Poppins'] mb-2">
+                Order Confirmed!
+              </h2>
+              <p className="text-[#a4b0be] mb-1">
+                We'll call you at:{' '}
+                <span className="text-[#f1f2f6] font-semibold">{phone}</span>
+              </p>
+              <p className="text-[#a4b0be] text-sm mb-8">
+                Our driver will contact you to confirm your location.
+              </p>
+              <DeliveryTracker currentStep={deliveryStep} />
+              <p className="text-[#a4b0be] text-sm mt-6">
+                {deliveryStep < 4
+                  ? 'Your order is on its way...'
+                  : '🏠 Your order has been delivered!'}
+              </p>
             </div>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Social login */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              onClick={() => handleSocialLogin(googleProvider, 'Google')}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl transition-all text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
-            >
-              <FaGoogle className="text-[#ff4757]" size={16} />
-              Google
-            </button>
-            <button
-              onClick={() => handleSocialLogin(githubProvider, 'GitHub')}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl transition-all text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
-            >
-              <FaGithub className="text-[#f1f2f6]" size={16} />
-              GitHub
-            </button>
+            {/* Menu Items */}
+            <div className="lg:col-span-2">
+              <h2 className="text-2xl font-bold mb-6 text-[#f1f2f6]">
+                Choose Your Items
+              </h2>
+
+              {error && (
+                <div className="bg-[#ff4757]/10 border border-[#ff4757]/20 rounded-xl p-4 mb-6">
+                  <p className="text-[#ff4757] text-sm">
+                    Failed to load menu. Please refresh the page.
+                  </p>
+                </div>
+              )}
+
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div
+                      key={n}
+                      className="bg-[#1a1a2e] rounded-2xl h-72 animate-pulse border border-[#2a2a3e]"
+                    />
+                  ))}
+                </div>
+              ) : menuItems.length === 0 ? (
+                <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-10 text-center">
+                  <p className="text-4xl mb-3">🍽️</p>
+                  <h3 className="text-lg font-semibold text-[#f1f2f6] mb-2">
+                    Menu is currently unavailable
+                  </h3>
+                  <p className="text-[#a4b0be] text-sm">
+                    Please check back soon!
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {menuItems.map((item) => (
+                    <MenuCard key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Delivery Details Panel */}
+            <div className="lg:col-span-1">
+              <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-6 sticky top-24">
+                <h2 className="text-xl font-bold text-[#f1f2f6] mb-6">
+                  Delivery Details
+                </h2>
+
+                {/* Phone input */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-[#a4b0be] mb-2">
+                    <FiPhone className="inline mr-1 text-[#ff4757]" size={14} />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+254 712 345 678"
+                    className="w-full bg-[#12122a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
+                  />
+                  <p className="text-xs text-[#a4b0be] mt-2">
+                    Our driver will call you to confirm your location
+                  </p>
+                </div>
+
+                {/* Cart summary */}
+                <div className="border-t border-[#2a2a3e] pt-5">
+                  {cartCount > 0 ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-4">
+                        <FiShoppingCart size={16} className="text-[#ff4757]" />
+                        <h3 className="font-semibold text-[#f1f2f6]">
+                          Your Order ({cartCount} item{cartCount > 1 ? 's' : ''})
+                        </h3>
+                      </div>
+
+                      <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                        {cartItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex justify-between items-center text-sm"
+                          >
+                            <span className="text-[#a4b0be]">
+                              {item.name} × {item.quantity}
+                            </span>
+                            <span className="text-[#f1f2f6] font-medium">
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-between items-center border-t border-[#2a2a3e] pt-4 mb-5">
+                        <span className="font-bold text-[#f1f2f6]">Total</span>
+                        <span className="font-bold text-lg text-[#ffa502]">
+                          {formatCurrency(cartTotal)}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={handlePlaceOrder}
+                        className="w-full bg-[#ff4757] hover:bg-[#ff6b81] text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
+                      >
+                        Place Order — {formatCurrency(cartTotal)}
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-[#a4b0be]">
+                      <p className="text-4xl mb-3">🛒</p>
+                      <p className="text-sm">
+                        Add items from the menu to place a delivery order
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
+        )}
+      </div>
 
-          {/* Toggle register / login */}
-          <p className="text-center text-sm text-[#a4b0be]">
-            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-[#ff4757] font-semibold hover:underline"
-            >
-              {isRegister ? 'Sign In' : 'Create one'}
-            </button>
-          </p>
+      {showPayment && (
+        <PaymentModal
+          amount={cartTotal}
+          orderType="food"
+          deliveryAddress={phone}
+          onClose={() => setShowPayment(false)}
+          onSuccess={handleOrderSuccess}
+        />
+      )}
+    </div>
+  )
+}
+
+function MenuCard({ item }) {
+  const { addToCart } = useCart()
+
+  return (
+    <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl overflow-hidden hover:border-[#ff4757]/40 hover:shadow-[0_0_20px_rgba(255,71,87,0.1)] transition-all duration-300 group flex flex-col">
+      <div className="h-48 overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400' }}
+        />
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-2 gap-2">
+          <h3 className="font-bold text-[#f1f2f6]">{item.name}</h3>
+          <span className="text-[#ffa502] font-bold whitespace-nowrap">
+            {formatCurrency(item.price)}
+          </span>
         </div>
+        <p className="text-[#a4b0be] text-sm mb-4 flex-1 line-clamp-2">
+          {item.description}
+        </p>
+        <button
+          onClick={() => {
+            addToCart(item)
+            toast.success(`${item.name} added to order`)
+          }}
+          className="w-full bg-[#ff4757] hover:bg-[#ff6b81] text-white font-semibold py-2.5 rounded-xl transition-all hover:shadow-[0_0_15px_rgba(255,71,87,0.3)]"
+        >
+          Add to Order
+        </button>
       </div>
     </div>
   )
