@@ -1,24 +1,23 @@
 # Changelog
 
-All notable changes to Casa Simpson will be documented here.
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-Versioning follows [Semantic Versioning](https://semver.org/).
+## [1.2.0] - 2026-05-16
 
-## [1.0.0] - 2026-05-15
+### Fixed
+- All 5 test suites now pass with correct assertions
+- Vitest coverage configured with 30% threshold
+- Firestore seed now uses original room/menu IDs
+- useFirestore handles missing createdAt gracefully
+- Removed broken BookingModal component
+- RoomDetail fetches room from Firestore by ID
+- Delivery page had missing toast import
+- Login redirects to intended page after auth
+- ProtectedRoute passes location state to Login
+- GitHub Actions split into test + deploy jobs
 
 ### Added
-
-- React Router v6 with protected routes for Restaurant and Delivery
-- Firebase Authentication — Email/Password, Google, GitHub, Phone OTP
-- Firestore data persistence for bookings, orders and reviews
-- Home page with hero, features, room preview, stats and CTA
-- Rooms page with type filter, price range slider and availability toggle
-- Room Detail page with booking form and Flutterwave payment
-- Restaurant & Bar page with category filter and floating checkout bar
-- Delivery page with Google Maps address autocomplete and order tracker
-- Reviews page with real-time Firestore reviews and submission form
-- Cart system with add, remove, update quantity and total calculation
-- Fully responsive layout across mobile, tablet and desktop
-- Dark theme with Song Finder-inspired color palette
-- GitHub Actions CI/CD pipeline for automated deployment to GitHub Pages
-- 30%+ test coverage with Vitest and React Testing Library
+- BookingConfirmation page with booking reference
+- MyBookings page with user-specific Firestore query
+- 12 rooms and 20 menu items for full filter coverage
+- Skeleton loading states on all data pages
+- My Bookings link in Navbar for authenticated users
+- Conditional base path (dev vs production)
