@@ -24,13 +24,20 @@ describe('MenuCard', () => {
     expect(screen.getByText('$8.00')).toBeInTheDocument()
   })
 
+  it('renders description', () => {
+    renderWithCart(<MenuCard item={mockItem} />)
+    expect(screen.getByText('Grilled bread with tomatoes.')).toBeInTheDocument()
+  })
+
   it('renders Add to Order button', () => {
     renderWithCart(<MenuCard item={mockItem} />)
     expect(screen.getByRole('button', { name: /add to order/i })).toBeInTheDocument()
   })
 
-  it('calls addToCart on button click', () => {
+  it('clicking Add to Order does not throw', () => {
     renderWithCart(<MenuCard item={mockItem} />)
-    fireEvent.click(screen.getByRole('button', { name: /add to order/i }))
+    expect(() =>
+      fireEvent.click(screen.getByRole('button', { name: /add to order/i }))
+    ).not.toThrow()
   })
 })

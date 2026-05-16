@@ -29,13 +29,19 @@ describe('RoomCard', () => {
     expect(screen.getByRole('button', { name: /view room/i })).toBeInTheDocument()
   })
 
-  it('shows Unavailable when not available', () => {
+  it('shows Unavailable button when not available', () => {
     render(<MemoryRouter><RoomCard room={{ ...mockRoom, available: false }} /></MemoryRouter>)
-    expect(screen.getByText('Not Available')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /unavailable/i })).toBeInTheDocument()
   })
 
   it('renders amenities', () => {
     render(<MemoryRouter><RoomCard room={mockRoom} /></MemoryRouter>)
     expect(screen.getByText('WiFi')).toBeInTheDocument()
+    expect(screen.getByText('AC')).toBeInTheDocument()
+  })
+
+  it('renders room type badge', () => {
+    render(<MemoryRouter><RoomCard room={mockRoom} /></MemoryRouter>)
+    expect(screen.getByText('single')).toBeInTheDocument()
   })
 })
