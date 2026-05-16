@@ -79,22 +79,23 @@ export default function RoomDetail() {
   }
 
   const handlePaymentSuccess = async () => {
-    await addDocument({
-      roomId: room.id,
-      roomName: room.name,
-      userId: user.uid,
-      userEmail: user.email,
-      checkIn,
-      checkOut,
-      guests,
-      nights,
-      total,
-      ref: generateBookingRef(),
-      status: 'confirmed',
-    })
-    toast.success('Booking confirmed! 🎉')
-    navigate('/')
+  const bookingData = {
+    roomId: room.id,
+    roomName: room.name,
+    roomImage: room.image,
+    userId: user.uid,
+    userEmail: user.email,
+    checkIn,
+    checkOut,
+    guests,
+    nights,
+    total,
+    ref: generateBookingRef(),
+    status: 'confirmed',
   }
+  await addDocument(bookingData)
+  navigate('/booking-confirmation', { state: { booking: bookingData } })
+}
 
   const typeColor = {
     single: 'bg-[#ff4757]/20 text-[#ff4757]',

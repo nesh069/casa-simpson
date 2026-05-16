@@ -10,6 +10,8 @@ import RoomDetail from './pages/RoomDetail'
 import Restaurant from './pages/Restaurant'
 import Delivery from './pages/Delivery'
 import Reviews from './pages/Reviews'
+import MyBookings from './pages/MyBookings'
+import BookingConfirmation from './pages/BookingConfirmation'
 import NotFound from './pages/NotFound'
 import { seedRooms, seedMenu } from './utils/seedFirestore'
 
@@ -37,6 +39,14 @@ export default function App() {
             element={<ProtectedRoute><Delivery /></ProtectedRoute>}
           />
           <Route path="/reviews" element={<Reviews />} />
+          <Route
+            path="/bookings"
+            element={<ProtectedRoute><MyBookings /></ProtectedRoute>}
+          />
+          <Route
+            path="/booking-confirmation"
+            element={<ProtectedRoute><BookingConfirmation /></ProtectedRoute>}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
