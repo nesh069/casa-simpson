@@ -71,16 +71,21 @@ export default function Login() {
   }
 
   const setupRecaptcha = () => {
+    // Clear existing verifier
     if (window.recaptchaVerifier) {
       window.recaptchaVerifier.clear()
       window.recaptchaVerifier = null
     }
+
+    // Create new verifier
     window.recaptchaVerifier = new RecaptchaVerifier(
       auth,
       'recaptcha-container',
       {
         size: 'invisible',
-        callback: () => {},
+        callback: () => {
+          console.log('reCAPTCHA verified')
+        },
         'expired-callback': () => {
           toast.error('reCAPTCHA expired. Please try again.')
         },
@@ -90,23 +95,41 @@ export default function Login() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault()
+
+    // Validate phone number format
     if (!phone.startsWith('+')) {
       toast.error('Phone number must start with + and country code (e.g. +254...)')
       return
     }
+
+    // Basic validation - at least 10 digits after +
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length < 10) {
+      toast.error('Please enter a valid phone number with at least 10 digits')
+      return
+    }
+
     setLoading(true)
     try {
       setupRecaptcha()
+
       const result = await signInWithPhoneNumber(
         auth,
         phone,
         window.recaptchaVerifier
       )
+
       setConfirmResult(result)
       toast.success('OTP sent! Check your phone.')
     } catch (err) {
+      console.error('OTP Error:', err)
       toast.error('Failed to send OTP. Check your number and try again.')
-      console.error(err)
+
+      // Clear recaptcha on error
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear()
+        window.recaptchaVerifier = null
+      }
     } finally {
       setLoading(false)
     }
@@ -114,16 +137,19 @@ export default function Login() {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault()
+
     if (otp.length !== 6) {
       toast.error('Please enter the 6-digit OTP')
       return
     }
+
     setLoading(true)
     try {
       await confirmResult.confirm(otp)
       toast.success('Phone verified! Welcome to Casa Simpson.')
       navigate(from, { replace: true })
     } catch (err) {
+      console.error('OTP Verification Error:', err)
       toast.error('Invalid OTP. Please try again.')
     } finally {
       setLoading(false)
@@ -134,7 +160,7 @@ export default function Login() {
     <div className="min-h-[90vh] flex items-center justify-center px-4 bg-[#0d0d1a] py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-bold font-['Poppins'] text-[#f1f2f6]">
+          <Link to="/" className="text-3xl font-bold font-[\'Poppins\'] text-[#f1f2f6]">
             Casa <span className="text-[#ff4757]">Simpson</span>
           </Link>
           <p className="text-[#a4b0be] mt-2">
@@ -263,7 +289,10 @@ export default function Login() {
                   <p className="text-xs text-[#a4b0be]">
                     ℹ️ Include country code — e.g. +254 for Kenya, +1 for USA
                   </p>
-                  <div id="recaptcha-container" />
+
+                  {/* reCAPTCHA container - must be present for phone auth */}
+                  <div id="recaptcha-container" className="h-0 overflow-hidden" />
+
                   <button
                     type="submit"
                     disabled={loading}
