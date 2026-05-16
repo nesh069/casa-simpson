@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { useCollection } from '../hooks/useFirestore'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../context/AuthContext'
 import { useLoadScript, Autocomplete } from '@react-google-maps/api'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
