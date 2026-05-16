@@ -4,10 +4,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
 } from 'firebase/auth'
-import { auth, googleProvider, githubProvider } from '../firebase'
+import { auth, googleProvider, githubProvider, setupRecaptcha, sendPhoneOTP, verifyPhoneOTP } from '../firebase'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiPhone } from 'react-icons/fi'
@@ -70,29 +68,6 @@ export default function Login() {
     }
   }
 
-  const setupRecaptcha = () => {
-    // Clear existing verifier
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear()
-      window.recaptchaVerifier = null
-    }
-
-    // Create new verifier
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      'recaptcha-container',
-      {
-        size: 'invisible',
-        callback: () => {
-          console.log('reCAPTCHA verified')
-        },
-        'expired-callback': () => {
-          toast.error('reCAPTCHA expired. Please try again.')
-        },
-      }
-    )
-  }
-
   const handleSendOtp = async (e) => {
     e.preventDefault()
 
@@ -111,25 +86,20 @@ export default function Login() {
 
     setLoading(true)
     try {
-      setupRecaptcha()
+      // Use the setupRecaptcha from firebase.js
+      const appVerifier = setupRecaptcha('recaptcha-container')
 
-      const result = await signInWithPhoneNumber(
-        auth,
-        phone,
-        window.recaptchaVerifier
-      )
+      const { confirmationResult, error } = await sendPhoneOTP(phone, appVerifier)
 
-      setConfirmResult(result)
+      if (error) {
+        throw error
+      }
+
+      setConfirmResult(confirmationResult)
       toast.success('OTP sent! Check your phone.')
     } catch (err) {
       console.error('OTP Error:', err)
       toast.error('Failed to send OTP. Check your number and try again.')
-
-      // Clear recaptcha on error
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear()
-        window.recaptchaVerifier = null
-      }
     } finally {
       setLoading(false)
     }
@@ -145,7 +115,12 @@ export default function Login() {
 
     setLoading(true)
     try {
-      await confirmResult.confirm(otp)
+      const { user: phoneUser, error } = await verifyPhoneOTP(confirmResult, otp)
+
+      if (error) {
+        throw error
+      }
+
       toast.success('Phone verified! Welcome to Casa Simpson.')
       navigate(from, { replace: true })
     } catch (err) {
@@ -160,7 +135,7 @@ export default function Login() {
     <div className="min-h-[90vh] flex items-center justify-center px-4 bg-[#0d0d1a] py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-bold font-[\'Poppins\'] text-[#f1f2f6]">
+          <Link to="/" className="text-3xl font-bold text-[#f1f2f6]">
             Casa <span className="text-[#ff4757]">Simpson</span>
           </Link>
           <p className="text-[#a4b0be] mt-2">
@@ -172,15 +147,15 @@ export default function Login() {
           {/* Tab selector */}
           <div className="flex bg-[#12122a] rounded-xl p-1 mb-6">
             {[
-              { key: 'email', label: '✉️ Email' },
-              { key: 'phone', label: '📱 Phone' },
+              { key: 'email', label: 'Email' },
+              { key: 'phone', label: 'Phone' },
             ].map((t) => (
               <button
                 key={t.key}
                 onClick={() => { setTab(t.key); setConfirmResult(null) }}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                   tab === t.key
-                    ? 'bg-[#ff4757] text-white shadow-[0_0_10px_rgba(255,71,87,0.3)]'
+                    ? 'bg-[#ff4757] text-white'
                     : 'text-[#a4b0be] hover:text-[#f1f2f6]'
                 }`}
               >
@@ -200,7 +175,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
+                    className="w-full pl-10 pr-4 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757]"
                   />
                 </div>
 
@@ -213,12 +188,12 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full pl-10 pr-10 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
+                    className="w-full pl-10 pr-10 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-[#a4b0be] hover:text-[#f1f2f6] transition-colors"
+                    className="absolute right-3 top-3.5 text-[#a4b0be] hover:text-[#f1f2f6]"
                   >
                     {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                   </button>
@@ -227,7 +202,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] disabled:text-[#a4b0be] text-white font-bold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
+                  className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] text-white font-bold py-3 rounded-xl transition-all"
                 >
                   {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
                 </button>
@@ -246,7 +221,7 @@ export default function Login() {
                 <button
                   onClick={() => handleSocialLogin(googleProvider, 'Google')}
                   disabled={loading}
-                  className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl transition-all text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
                 >
                   <FaGoogle className="text-[#ff4757]" size={16} />
                   Google
@@ -254,7 +229,7 @@ export default function Login() {
                 <button
                   onClick={() => handleSocialLogin(githubProvider, 'GitHub')}
                   disabled={loading}
-                  className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl transition-all text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 bg-[#12122a] border border-[#2a2a3e] hover:border-[#ff4757]/40 py-3 rounded-xl text-[#f1f2f6] text-sm font-medium disabled:opacity-50"
                 >
                   <FaGithub className="text-[#f1f2f6]" size={16} />
                   GitHub
@@ -283,20 +258,20 @@ export default function Login() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
-                      className="w-full pl-10 pr-4 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757]"
                     />
                   </div>
                   <p className="text-xs text-[#a4b0be]">
-                    ℹ️ Include country code — e.g. +254 for Kenya, +1 for USA
+                    Include country code — e.g. +254 for Kenya, +1 for USA
                   </p>
 
-                  {/* reCAPTCHA container - must be present for phone auth */}
-                  <div id="recaptcha-container" className="h-0 overflow-hidden" />
+                  {/* reCAPTCHA container */}
+                  <div id="recaptcha-container" />
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] text-white font-bold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
+                    className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] text-white font-bold py-3 rounded-xl transition-all"
                   >
                     {loading ? 'Sending OTP...' : 'Send OTP'}
                   </button>
@@ -316,19 +291,19 @@ export default function Login() {
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     maxLength={6}
                     required
-                    className="w-full px-4 py-4 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-[#f1f2f6] placeholder-[#a4b0be] text-center tracking-[0.6em] text-xl font-bold focus:outline-none focus:border-[#ff4757] transition-colors"
+                    className="w-full px-4 py-4 bg-[#12122a] border border-[#2a2a3e] rounded-xl text-[#f1f2f6] placeholder-[#a4b0be] text-center tracking-[0.6em] text-xl font-bold focus:outline-none focus:border-[#ff4757]"
                   />
                   <button
                     type="submit"
                     disabled={loading || otp.length !== 6}
-                    className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] disabled:text-[#a4b0be] text-white font-bold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
+                    className="w-full bg-[#ff4757] hover:bg-[#ff6b81] disabled:bg-[#2a2a3e] text-white font-bold py-3 rounded-xl transition-all"
                   >
                     {loading ? 'Verifying...' : 'Verify OTP'}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setConfirmResult(null); setOtp('') }}
-                    className="w-full text-[#a4b0be] text-sm hover:text-[#f1f2f6] transition-colors py-1"
+                    className="w-full text-[#a4b0be] text-sm hover:text-[#f1f2f6] py-1"
                   >
                     ← Change number
                   </button>
