@@ -4,6 +4,7 @@ import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
+import DeliveryTracker from '../components/DeliveryTracker'
 
 export default function Delivery() {
   const { user } = useAuth()
@@ -63,7 +64,10 @@ export default function Delivery() {
             <p className="text-[#a4b0be] mb-6 text-sm">
               Our delivery driver will contact you to confirm your location.
             </p>
-            <p className="text-[#ff4757] font-semibold">
+            <div className="mt-4">
+              <DeliveryTracker currentStep={deliveryStep} />
+            </div>
+            <p className="text-[#a4b0be] text-sm mt-4">
               {deliveryStep < 4
                 ? 'Your order is being prepared...'
                 : '🏠 Your order has been delivered!'}
