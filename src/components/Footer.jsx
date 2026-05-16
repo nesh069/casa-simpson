@@ -10,19 +10,9 @@ export default function Footer() {
             <h3 className="text-text text-xl font-bold mb-3 font-['Poppins']">
               Casa <span className="text-brand">Simpson</span>
             </h3>
-            <p className="text-sm leading-relaxed text-muted">
+            <p className="text-base leading-relaxed text-muted">
               Where luxury meets home. Experience world-class hospitality in every detail.
             </p>
-            <div className="flex gap-3 mt-4">
-              {['🏨', '🍽️', '🚚', '⭐'].map((icon) => (
-                <span
-                  key={icon}
-                  className="w-9 h-9 bg-card border border-border rounded-full flex items-center justify-center text-sm hover:border-brand/50 transition-colors cursor-default"
-                >
-                  {icon}
-                </span>
-              ))}
-            </div>
           </div>
 
           <div>
@@ -56,11 +46,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2 text-muted">
                 <FiPhone size={14} className="text-brand shrink-0" />
-                +254 700 000 000
+                +254723363961
               </li>
               <li className="flex items-center gap-2 text-muted">
                 <FiMail size={14} className="text-brand shrink-0" />
-                hello@casasimpson.com
+                muneneemmanuel953@gmail.com
               </li>
             </ul>
           </div>
