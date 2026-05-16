@@ -2,11 +2,8 @@ import { useState } from 'react'
 import { useCart } from '../context/CartContext'
 import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../context/AuthContext'
-import { useLoadScript, Autocomplete } from '@react-google-maps/api'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
-
-const GOOGLE_MAPS_LIBRARIES = ['places']
 
 export default function Delivery() {
   const { user } = useAuth()
@@ -14,24 +11,9 @@ export default function Delivery() {
   const { data: menuItems, loading, error } = useCollection('menu', { ordered: false })
 
   const [address, setAddress] = useState('')
-  const [autocomplete, setAutocomplete] = useState(null)
   const [showPayment, setShowPayment] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [deliveryStep, setDeliveryStep] = useState(0)
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  })
-
-  const onPlaceChanged = () => {
-    if (autocomplete) {
-      const place = autocomplete.getPlace()
-      if (place.formatted_address) {
-        setAddress(place.formatted_address)
-      }
-    }
-  }
 
   const handleOrderSuccess = () => {
     setShowPayment(false)
@@ -133,40 +115,21 @@ export default function Delivery() {
                   Delivery Details
                 </h2>
 
-                {/* Address Input */}
+                {/* Address Input - Simplified, no Google Maps dependency */}
                 <div className="mb-6">
                   <label className="block text-sm text-[#a4b0be] mb-2">
                     📍 Delivery Address
                   </label>
-
-                  {isLoaded ? (
-                    <Autocomplete
-                      onLoad={setAutocomplete}
-                      onPlaceChanged={onPlaceChanged}
-                    >
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Enter your delivery address..."
-                        className="w-full bg-[#12122a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
-                      />
-                    </Autocomplete>
-                  ) : (
-                    <input
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Enter your delivery address..."
-                      className="w-full bg-[#12122a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors"
-                    />
-                  )}
-
-                  {loadError && (
-                    <p className="text-xs text-yellow-500 mt-2">
-                      ⚠️ Address autocomplete unavailable. Type address manually.
-                    </p>
-                  )}
+                  <textarea
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter your full delivery address..."
+                    rows={3}
+                    className="w-full bg-[#12122a] border border-[#2a2a3e] rounded-xl px-4 py-3 text-sm text-[#f1f2f6] placeholder-[#a4b0be] focus:outline-none focus:border-[#ff4757] transition-colors resize-none"
+                  />
+                  <p className="text-xs text-[#a4b0be] mt-2">
+                    Include building name, floor, and any delivery instructions
+                  </p>
                 </div>
 
                 {/* Cart Summary */}
