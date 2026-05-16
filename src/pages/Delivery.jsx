@@ -9,7 +9,6 @@ export default function Delivery() {
   const [showPayment, setShowPayment] = useState(false)
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
     <div style={{ padding: '100px 20px 20px', maxWidth: '1200px', margin: '0 auto', color: '#f1f2f6' }}>
