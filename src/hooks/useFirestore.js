@@ -18,7 +18,7 @@ export function useCollection(collectionName, options = {}) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    let unsubscribe
+    let unsubscribe = () => {}
 
     const setupListener = async () => {
       try {
@@ -33,18 +33,22 @@ export function useCollection(collectionName, options = {}) {
             (snapshot) => {
               setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
               setLoading(false)
+              setError(null)
             },
-            async () => {
-              // If orderBy fails (no createdAt field), fall back to unordered
+            async (err) => {
+              console.warn(`orderBy failed for ${collectionName}, falling back:`, err.message)
+              // If orderBy fails (no createdAt field or missing index), fall back to unordered
               const fallback = query(collection(db, collectionName))
               unsubscribe = onSnapshot(
                 fallback,
                 (snapshot) => {
                   setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
                   setLoading(false)
+                  setError(null)
                 },
-                (err) => {
-                  setError(err.message)
+                (err2) => {
+                  console.error(`Fallback also failed for ${collectionName}:`, err2.message)
+                  setError(err2.message)
                   setLoading(false)
                 }
               )
@@ -57,22 +61,25 @@ export function useCollection(collectionName, options = {}) {
             (snapshot) => {
               setData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })))
               setLoading(false)
+              setError(null)
             },
             (err) => {
+              console.error(`Snapshot error for ${collectionName}:`, err.message)
               setError(err.message)
               setLoading(false)
             }
           )
         }
       } catch (err) {
+        console.error(`Setup error for ${collectionName}:`, err.message)
         setError(err.message)
         setLoading(false)
       }
     }
 
     setupListener()
-    return () => unsubscribe && unsubscribe()
-  }, [collectionName])
+    return () => unsubscribe()
+  }, [collectionName, options.ordered])
 
   const addDocument = async (docData) => {
     await addDoc(collection(db, collectionName), {
