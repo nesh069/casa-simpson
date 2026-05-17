@@ -1,4 +1,46 @@
 export const rooms = [
+  // Budget rooms
+  {
+    id: 'r13',
+    name: 'Budget Single',
+    type: 'single',
+    price: 45,
+    description: 'Clean and comfortable budget room, perfect for solo travellers watching their wallet.',
+    amenities: ['WiFi', 'Fan', 'Shared Bathroom'],
+    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800',
+    available: true,
+  },
+  {
+    id: 'r14',
+    name: 'Economy Room',
+    type: 'single',
+    price: 55,
+    description: 'Simple and affordable room with all the essentials for a comfortable night.',
+    amenities: ['WiFi', 'AC', 'Shared Bathroom'],
+    image: 'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?w=800',
+    available: true,
+  },
+  {
+    id: 'r15',
+    name: 'Standard Room',
+    type: 'single',
+    price: 75,
+    description: 'Well-appointed standard room with private bathroom and daily housekeeping.',
+    amenities: ['WiFi', 'AC', 'TV', 'En-suite'],
+    image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800',
+    available: true,
+  },
+  {
+    id: 'r16',
+    name: 'Shared Dormitory',
+    type: 'single',
+    price: 25,
+    description: 'Affordable 4-bed dormitory style room — great for backpackers and solo adventurers.',
+    amenities: ['WiFi', 'Lockers', 'Shared Bathroom', 'AC'],
+    image: 'https://images.unsplash.com/photo-1520277739336-7bf67eebd30c?w=800',
+    available: true,
+  },
+  // Original rooms
   {
     id: 'r1',
     name: 'Classic Room',

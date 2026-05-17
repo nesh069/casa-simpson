@@ -60,7 +60,7 @@ export default function Rooms() {
             </p>
             <input
               type="range"
-              min={80}
+              min={25}
               max={1000}
               step={10}
               value={maxPrice}
