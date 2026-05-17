@@ -6,7 +6,6 @@ import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
 import { FiPhone, FiShoppingCart } from 'react-icons/fi'
 import { formatCurrency, formatKES } from '../utils/helpers'
-import DeliveryTracker from '../components/DeliveryTracker'
 
 export default function Delivery() {
   const { user } = useAuth()
