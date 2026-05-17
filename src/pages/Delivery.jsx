@@ -15,16 +15,11 @@ export default function Delivery() {
   const [phone, setPhone] = useState('')
   const [showPayment, setShowPayment] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
-  const [deliveryStep, setDeliveryStep] = useState(1)
 
   const handleOrderSuccess = () => {
     setShowPayment(false)
     setOrderPlaced(true)
     clearCart()
-    const steps = [2, 3, 4]
-    steps.forEach((step, i) => {
-      setTimeout(() => setDeliveryStep(step), (i + 1) * 3000)
-    })
     toast.success('Order placed successfully!')
   }
 
@@ -64,12 +59,6 @@ export default function Delivery() {
             </p>
             <p className="text-[#a4b0be] text-sm mb-8">
               Our driver will contact you to confirm your location.
-            </p>
-            <DeliveryTracker currentStep={deliveryStep} />
-            <p className="text-[#a4b0be] text-sm mt-6">
-              {deliveryStep < 4
-                ? 'Your order is on its way...'
-                : '🏠 Your order has been delivered!'}
             </p>
             <Link
               to="/"
