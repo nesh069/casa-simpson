@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { formatCurrency, formatKES, getNights, generateBookingRef } from '../utils/helpers'
 import { useAuth } from '../context/AuthContext'
-import { useCollection } from '../hooks/useFirestore'
+import { useBooking } from '../context/BookingContext'
 import PaymentModal from '../components/PaymentModal'
 import toast from 'react-hot-toast'
 import { FiCheck, FiArrowLeft } from 'react-icons/fi'
@@ -13,7 +13,7 @@ export default function RoomDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { addDocument } = useCollection('bookings')
+  const { createBooking } = useBooking()
 
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -80,18 +80,17 @@ export default function RoomDetail() {
       roomId: room.id,
       roomName: room.name,
       roomImage: room.image,
-      userId: user.uid,
-      userEmail: user.email,
       checkIn,
       checkOut,
       guests,
       nights,
-      total,
+      totalPrice: total,
       ref: generateBookingRef(),
-      status: 'confirmed',
     }
-    await addDocument(bookingData)
-    navigate('/booking-confirmation', { state: { booking: bookingData } })
+    const result = await createBooking(bookingData)
+    if (result.success) {
+      navigate('/booking-confirmation', { state: { booking: bookingData } })
+    }
   }
 
   const typeColor = {

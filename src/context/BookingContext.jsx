@@ -3,14 +3,9 @@ import { useAuth } from './AuthContext'
 import { db } from '../firebase'
 import {
   doc,
-  getDoc,
-  setDoc,
   updateDoc,
   runTransaction,
   collection,
-  query,
-  where,
-  getDocs,
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore'
@@ -54,55 +49,32 @@ export function BookingProvider({ children }) {
     return () => unsubscribe()
   }, [user])
 
-  /**
-   * Create a booking with conflict prevention using Firestore transaction.
-   * This ensures two users cannot book the same room for overlapping dates.
-   */
-  const createBooking = async (roomId, roomName, checkIn, checkOut, totalPrice) => {
+  const createBooking = async (bookingData) => {
     if (!user) {
       toast.error('Please sign in to book a room')
       return { success: false, error: 'Not authenticated' }
     }
 
+    const { roomId, roomName, checkIn, checkOut, totalPrice, guests, nights, roomImage, ref } = bookingData
     const bookingId = `${user.uid}_${roomId}_${Date.now()}`
     const roomRef = doc(db, 'rooms', roomId)
     const bookingRef = doc(db, 'bookings', bookingId)
 
     try {
       const result = await runTransaction(db, async (transaction) => {
-        // 1. Get current room data
         const roomSnap = await transaction.get(roomRef)
-        if (!roomSnap.exists()) {
-          throw new Error('Room not found')
-        }
+        if (!roomSnap.exists()) throw new Error('Room not found')
 
         const roomData = roomSnap.data()
-
-        // 2. Check if room is available
-        if (roomData.available === false) {
-          throw new Error('Room is no longer available')
-        }
-
-        // 3. Check for overlapping bookings
-        const bookingsRef = collection(db, 'bookings')
-        const overlapQuery = query(
-          bookingsRef,
-          where('roomId', '==', roomId),
-          where('status', 'in', ['confirmed', 'pending'])
-        )
-        const existingBookings = await getDocs(overlapQuery)
+        const existingBookings = roomData.bookings || []
 
         const newCheckIn = new Date(checkIn).getTime()
         const newCheckOut = new Date(checkOut).getTime()
 
-        for (const existing of existingBookings.docs) {
-          const b = existing.data()
+        for (const b of existingBookings) {
           const existingCheckIn = new Date(b.checkIn).getTime()
           const existingCheckOut = new Date(b.checkOut).getTime()
-
-          // Check overlap: new booking overlaps if NOT (new ends before existing starts OR new starts after existing ends)
           const hasOverlap = !(newCheckOut <= existingCheckIn || newCheckIn >= existingCheckOut)
-
           if (hasOverlap) {
             throw new Error(
               `Room is already booked from ${b.checkIn} to ${b.checkOut}. Please choose different dates.`
@@ -110,18 +82,22 @@ export function BookingProvider({ children }) {
           }
         }
 
-        // 4. Mark room as unavailable (optional — depends on your business logic)
-        // transaction.update(roomRef, { available: false })
+        transaction.update(roomRef, {
+          bookings: [...existingBookings, { checkIn, checkOut, bookingId, userId: user.uid }],
+        })
 
-        // 5. Create the booking
         transaction.set(bookingRef, {
           userId: user.uid,
           userEmail: user.email,
           roomId,
           roomName,
+          roomImage,
           checkIn,
           checkOut,
           totalPrice,
+          guests,
+          nights,
+          ref,
           status: 'confirmed',
           createdAt: serverTimestamp(),
         })

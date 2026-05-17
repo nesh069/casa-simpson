@@ -77,8 +77,8 @@ export default function BookingConfirmation() {
             <div className="border-t border-border pt-4 flex justify-between items-center">
               <span className="text-muted font-semibold">Total Paid</span>
               <div className="text-right">
-                <p className="text-2xl font-bold text-accent">{formatCurrency(booking.total)}</p>
-                <p className="text-xs text-muted">{formatKES(booking.total)}</p>
+                <p className="text-2xl font-bold text-accent">{formatCurrency(booking.totalPrice || booking.total)}</p>
+                <p className="text-xs text-muted">{formatKES(booking.totalPrice || booking.total)}</p>
               </div>
             </div>
           </div>

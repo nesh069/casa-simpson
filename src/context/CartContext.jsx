@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { useAuth } from './AuthContext'
 import { db } from '../firebase'
 import {
@@ -6,6 +6,7 @@ import {
   setDoc,
   deleteDoc,
   onSnapshot,
+  getDoc,
 } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
@@ -15,12 +16,16 @@ export function CartProvider({ children }) {
   const { user } = useAuth()
   const [cartItems, setCartItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const prevUserRef = useRef(user)
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   // Load cart from Firestore when user changes
   useEffect(() => {
+    const prevUser = prevUserRef.current
+    prevUserRef.current = user
+
     if (!user) {
       setCartItems([])
       setLoading(false)
@@ -29,6 +34,23 @@ export function CartProvider({ children }) {
 
     setLoading(true)
     const cartRef = doc(db, 'users', user.uid, 'cart', 'items')
+
+    // Merge guest cart items into the user's Firestore cart on login
+    if (!prevUser && cartItems.length > 0) {
+      getDoc(cartRef).then((snap) => {
+        const firestoreItems = snap.exists() ? (snap.data().items || []) : []
+        const merged = [...firestoreItems]
+        for (const guestItem of cartItems) {
+          const existing = merged.find((i) => i.id === guestItem.id)
+          if (existing) {
+            existing.quantity = Math.max(existing.quantity, guestItem.quantity)
+          } else {
+            merged.push(guestItem)
+          }
+        }
+        setDoc(cartRef, { items: merged, updatedAt: new Date().toISOString() })
+      })
+    }
 
     const unsubscribe = onSnapshot(
       cartRef,

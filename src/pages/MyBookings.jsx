@@ -1,29 +1,12 @@
 import { useAuth } from '../context/AuthContext'
+import { useBooking } from '../context/BookingContext'
 import { formatCurrency, formatKES, formatDate } from '../utils/helpers'
 import { FiCalendar, FiUsers, FiTag } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
-import { where, query, collection, onSnapshot, orderBy } from 'firebase/firestore'
-import { db } from '../firebase'
-import { useState, useEffect } from 'react'
 
 export default function MyBookings() {
   const { user } = useAuth()
-  const [bookings, setBookings] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-    const q = query(
-      collection(db, 'bookings'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    )
-    const unsub = onSnapshot(q,
-      (snap) => { setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); setLoading(false) },
-      () => setLoading(false)
-    )
-    return () => unsub()
-  }, [user])
+  const { myBookings: bookings, loading } = useBooking()
 
   const statusColor = {
     confirmed: 'bg-[#2ed573]/20 text-[#2ed573] border-[#2ed573]/30',
@@ -86,8 +69,8 @@ export default function MyBookings() {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-2xl font-bold text-accent">{formatCurrency(booking.total)}</p>
-                    <p className="text-sm text-muted">{formatKES(booking.total)}</p>
+                    <p className="text-2xl font-bold text-accent">{formatCurrency(booking.totalPrice || booking.total)}</p>
+                    <p className="text-sm text-muted">{formatKES(booking.totalPrice || booking.total)}</p>
                     <p className="text-xs text-muted">{booking.nights} night{booking.nights > 1 ? 's' : ''}</p>
                   </div>
                 </div>
