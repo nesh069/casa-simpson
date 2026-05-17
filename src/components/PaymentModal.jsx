@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
@@ -19,15 +19,23 @@ export default function PaymentModal({
   const { addDocument } = useCollection('orders')
   const [loading, setLoading] = useState(false)
 
+  // Generate a stable tx_ref for this modal instance
+  const txRef = useMemo(() => generateBookingRef(), [])
+
+  // Ensure customer always has valid values — never undefined
+  const customerEmail = user?.email || `guest_${Date.now()}@casasimpson.com`
+  const customerName = user?.displayName || user?.email?.split('@')[0] || 'Guest'
+
   const config = {
     public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
-    tx_ref: generateBookingRef(),
-    amount,
+    tx_ref: txRef,
+    amount: Number(amount) || 1,
     currency: 'USD',
     payment_options: 'card',
     customer: {
-      email: user?.email || 'guest@casasimpson.com',
-      name: user?.displayName || 'Guest',
+      email: customerEmail,
+      name: customerName,
+      phone_number: deliveryAddress || '',
     },
     customizations: {
       title: 'Casa Simpson',
@@ -39,32 +47,52 @@ export default function PaymentModal({
   const handleFlutterPayment = useFlutterwave(config)
 
   const handlePay = () => {
+    if (!import.meta.env.VITE_FLW_PUBLIC_KEY) {
+      toast.error('Payment not configured. Please try again later.')
+      return
+    }
     setLoading(true)
-    handleFlutterPayment({
-      callback: async (response) => {
-        closePaymentModal()
-        if (response.status === 'successful') {
-          await addDocument({
-            userId: user?.uid,
-            userEmail: user?.email,
-            amount,
-            orderType,
-            deliveryAddress,
-            items: cartItems,
-            transactionId: response.transaction_id,
-            status: 'paid',
-          })
-          clearCart()
-          toast.success('Payment successful! 🎉')
-          onSuccess && onSuccess(response)
-          onClose()
-        } else {
-          toast.error('Payment was not completed.')
-        }
-        setLoading(false)
-      },
-      onClose: () => setLoading(false),
-    })
+    try {
+      handleFlutterPayment({
+        callback: async (response) => {
+          closePaymentModal()
+          if (response.status === 'successful' || response.status === 'completed') {
+            try {
+              await addDocument({
+                userId: user?.uid || 'guest',
+                userEmail: customerEmail,
+                amount,
+                orderType,
+                deliveryAddress,
+                items: cartItems,
+                transactionId: response.transaction_id,
+                txRef,
+                status: 'paid',
+              })
+              clearCart()
+              toast.success('Payment successful! 🎉')
+              onSuccess && onSuccess(response)
+              onClose()
+            } catch (err) {
+              console.error('Order save error:', err)
+              toast.success('Payment successful! 🎉')
+              onSuccess && onSuccess(response)
+              onClose()
+            }
+          } else {
+            toast.error('Payment was not completed. Please try again.')
+          }
+          setLoading(false)
+        },
+        onClose: () => {
+          setLoading(false)
+        },
+      })
+    } catch (err) {
+      console.error('Payment error:', err)
+      toast.error('Payment failed to open. Please refresh and try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -91,12 +119,16 @@ export default function PaymentModal({
             <p className="text-xs text-muted/60 mt-1 capitalize">{orderType} order</p>
           </div>
 
-          <div className="text-center space-y-1">
+          <div className="bg-surface border border-border rounded-xl p-3 text-xs text-muted space-y-1">
+            <p className="font-semibold text-text text-sm">Test Card Details</p>
+            <p>Card: <span className="font-mono text-accent">5531886652142950</span></p>
+            <p>Expiry: <span className="font-mono">09/32</span> · CVV: <span className="font-mono">564</span></p>
+            <p>PIN: <span className="font-mono">3310</span> · OTP: <span className="font-mono">12345</span></p>
+          </div>
+
+          <div className="text-center">
             <p className="text-muted text-sm">
               Powered by <span className="text-accent font-semibold">Flutterwave</span>
-            </p>
-            <p className="text-xs text-muted/60">
-              Test card: 5531886652142950 · Exp: 09/32 · CVV: 564
             </p>
           </div>
 
@@ -105,7 +137,7 @@ export default function PaymentModal({
             disabled={loading}
             className="w-full bg-brand hover:bg-brand-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
           >
-            {loading ? 'Processing...' : `Pay ${formatCurrency(amount)}`}
+            {loading ? 'Opening payment...' : `Pay ${formatCurrency(amount)}`}
           </button>
 
           <button
