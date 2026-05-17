@@ -1,8 +1,13 @@
+export const USD_TO_KES = 129.50
+
 export const formatCurrency = (amount) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(amount)
+
+export const formatKES = (amount) =>
+  `KES ${Math.round(amount * USD_TO_KES).toLocaleString('en-KE')}`
 
 export const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString('en-US', {

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { formatCurrency, formatDate } from '../utils/helpers'
+import { formatCurrency, formatKES, formatDate } from '../utils/helpers'
 import { FiCheck, FiCalendar, FiUsers, FiHome } from 'react-icons/fi'
 
 export default function BookingConfirmation() {
@@ -12,12 +12,8 @@ export default function BookingConfirmation() {
       <div className="min-h-screen bg-page flex items-center justify-center text-center px-4">
         <div>
           <p className="text-6xl mb-4">🏨</p>
-          <p className="text-text text-xl font-semibold mb-2">
-            No booking found
-          </p>
-          <Link to="/rooms" className="text-brand hover:underline">
-            Browse our rooms
-          </Link>
+          <p className="text-text text-xl font-semibold mb-2">No booking found</p>
+          <Link to="/rooms" className="text-brand hover:underline">Browse our rooms</Link>
         </div>
       </div>
     )
@@ -26,40 +22,25 @@ export default function BookingConfirmation() {
   return (
     <div className="min-h-screen bg-page flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Success icon */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-success/20 border-2 border-success rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(46,213,115,0.3)]">
             <FiCheck size={36} className="text-success" />
           </div>
-          <h1 className="text-3xl font-bold font-['Poppins'] text-text mb-2">
-            Booking Confirmed!
-          </h1>
-          <p className="text-muted">
-            Your stay has been successfully booked.
-          </p>
+          <h1 className="text-3xl font-bold font-['Poppins'] text-text mb-2">Booking Confirmed!</h1>
+          <p className="text-muted">Your stay has been successfully booked.</p>
         </div>
 
-        {/* Booking details card */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
-          {/* Room image */}
           {booking.roomImage && (
-            <img
-              src={booking.roomImage}
-              alt={booking.roomName}
-              className="w-full h-40 object-cover"
-            />
+            <img src={booking.roomImage} alt={booking.roomName} className="w-full h-40 object-cover" />
           )}
 
           <div className="p-6 space-y-4">
-            {/* Booking ref */}
             <div className="flex items-center justify-between bg-surface border border-border rounded-xl px-4 py-3">
               <span className="text-muted text-sm">Booking Reference</span>
-              <span className="text-brand font-bold font-mono tracking-wider">
-                {booking.ref}
-              </span>
+              <span className="text-brand font-bold font-mono tracking-wider">{booking.ref}</span>
             </div>
 
-            {/* Room name */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-brand/20 rounded-full flex items-center justify-center shrink-0">
                 <FiHome size={16} className="text-brand" />
@@ -70,7 +51,6 @@ export default function BookingConfirmation() {
               </div>
             </div>
 
-            {/* Dates */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-accent/20 rounded-full flex items-center justify-center shrink-0">
                 <FiCalendar size={16} className="text-accent" />
@@ -80,44 +60,35 @@ export default function BookingConfirmation() {
                 <p className="text-text font-semibold">
                   {formatDate(booking.checkIn)} → {formatDate(booking.checkOut)}
                 </p>
-                <p className="text-muted text-xs">
-                  {booking.nights} night{booking.nights > 1 ? 's' : ''}
-                </p>
+                <p className="text-muted text-xs">{booking.nights} night{booking.nights > 1 ? 's' : ''}</p>
               </div>
             </div>
 
-            {/* Guests */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-success/20 rounded-full flex items-center justify-center shrink-0">
                 <FiUsers size={16} className="text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted">Guests</p>
-                <p className="text-text font-semibold">
-                  {booking.guests} Guest{booking.guests > 1 ? 's' : ''}
-                </p>
+                <p className="text-text font-semibold">{booking.guests} Guest{booking.guests > 1 ? 's' : ''}</p>
               </div>
             </div>
 
-            {/* Total */}
             <div className="border-t border-border pt-4 flex justify-between items-center">
               <span className="text-muted font-semibold">Total Paid</span>
-              <span className="text-2xl font-bold text-accent">
-                {formatCurrency(booking.total)}
-              </span>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-accent">{formatCurrency(booking.total)}</p>
+                <p className="text-xs text-muted">{formatKES(booking.total)}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Status badge */}
         <div className="flex items-center justify-center gap-2 bg-success/10 border border-success/30 rounded-xl px-4 py-3 mb-6">
           <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-          <span className="text-success text-sm font-semibold">
-            Booking status: Confirmed
-          </span>
+          <span className="text-success text-sm font-semibold">Booking status: Confirmed</span>
         </div>
 
-        {/* Actions */}
         <div className="space-y-3">
           <Link
             to="/bookings"

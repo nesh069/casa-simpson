@@ -1,12 +1,10 @@
-import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../context/AuthContext'
-import { formatCurrency, formatDate } from '../utils/helpers'
+import { formatCurrency, formatKES, formatDate } from '../utils/helpers'
 import { FiCalendar, FiUsers, FiTag } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
-import { where, query, collection } from 'firebase/firestore'
+import { where, query, collection, onSnapshot, orderBy } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useState, useEffect } from 'react'
-import { onSnapshot, orderBy } from 'firebase/firestore'
 
 export default function MyBookings() {
   const { user } = useAuth()
@@ -21,10 +19,7 @@ export default function MyBookings() {
       orderBy('createdAt', 'desc')
     )
     const unsub = onSnapshot(q,
-      (snap) => {
-        setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-        setLoading(false)
-      },
+      (snap) => { setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); setLoading(false) },
       () => setLoading(false)
     )
     return () => unsub()
@@ -40,32 +35,21 @@ export default function MyBookings() {
     <div className="bg-page min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold font-['Poppins'] text-text mb-2">
-            My Bookings
-          </h1>
-          <p className="text-muted">
-            {user?.displayName || user?.email}'s reservations
-          </p>
+          <h1 className="text-4xl font-bold font-['Poppins'] text-text mb-2">My Bookings</h1>
+          <p className="text-muted">{user?.displayName || user?.email}'s reservations</p>
         </div>
 
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="bg-card rounded-2xl h-36 animate-pulse border border-border"
-              />
+              <div key={n} className="bg-card rounded-2xl h-36 animate-pulse border border-border" />
             ))}
           </div>
         ) : bookings.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-6xl mb-4">🏨</p>
-            <p className="text-xl font-semibold text-text mb-2">
-              No bookings yet
-            </p>
-            <p className="text-muted mb-8">
-              You haven't made any reservations yet.
-            </p>
+            <p className="text-xl font-semibold text-text mb-2">No bookings yet</p>
+            <p className="text-muted mb-8">You haven't made any reservations yet.</p>
             <Link
               to="/rooms"
               className="bg-brand hover:bg-brand-hover text-white font-semibold px-8 py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(255,71,87,0.4)]"
@@ -76,21 +60,15 @@ export default function MyBookings() {
         ) : (
           <div className="space-y-4">
             {bookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="bg-card border border-border hover:border-brand/30 rounded-2xl p-6 transition-all"
-              >
+              <div key={booking.id} className="bg-card border border-border hover:border-brand/30 rounded-2xl p-6 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-3 flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="text-lg font-bold text-text">
-                        {booking.roomName}
-                      </h3>
+                      <h3 className="text-lg font-bold text-text">{booking.roomName}</h3>
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full border capitalize ${statusColor[booking.status] || statusColor.confirmed}`}>
                         {booking.status}
                       </span>
                     </div>
-
                     <div className="flex flex-wrap gap-4 text-sm text-muted">
                       <div className="flex items-center gap-1.5">
                         <FiCalendar size={14} className="text-brand" />
@@ -108,12 +86,9 @@ export default function MyBookings() {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-2xl font-bold text-accent">
-                      {formatCurrency(booking.total)}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {booking.nights} night{booking.nights > 1 ? 's' : ''}
-                    </p>
+                    <p className="text-2xl font-bold text-accent">{formatCurrency(booking.total)}</p>
+                    <p className="text-sm text-muted">{formatKES(booking.total)}</p>
+                    <p className="text-xs text-muted">{booking.nights} night{booking.nights > 1 ? 's' : ''}</p>
                   </div>
                 </div>
               </div>

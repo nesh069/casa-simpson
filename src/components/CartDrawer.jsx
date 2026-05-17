@@ -1,5 +1,5 @@
 import { useCart } from '../context/CartContext'
-import { formatCurrency } from '../utils/helpers'
+import { formatCurrency, formatKES } from '../utils/helpers'
 import { FiX, FiTrash2, FiPlus, FiMinus, FiShoppingCart } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
 
@@ -38,9 +38,7 @@ export default function CartDrawer({ open, onClose }) {
             <div className="text-center py-16 text-muted">
               <p className="text-5xl mb-4">🛒</p>
               <p className="font-medium">Your cart is empty</p>
-              <p className="text-sm mt-1 text-muted/60">
-                Add items from the menu
-              </p>
+              <p className="text-sm mt-1 text-muted/60">Add items from the menu</p>
             </div>
           ) : (
             cartItems.map((item) => (
@@ -52,14 +50,12 @@ export default function CartDrawer({ open, onClose }) {
                   src={item.image}
                   alt={item.name}
                   className="w-16 h-16 rounded-xl object-cover"
+                  onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400' }}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text text-sm truncate">
-                    {item.name}
-                  </p>
-                  <p className="text-accent font-bold text-sm">
-                    {formatCurrency(item.price)}
-                  </p>
+                  <p className="font-semibold text-text text-sm truncate">{item.name}</p>
+                  <p className="text-accent font-bold text-sm">{formatCurrency(item.price)}</p>
+                  <p className="text-muted text-xs">{formatKES(item.price)}</p>
                   <div className="flex items-center gap-2 mt-1.5">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -91,11 +87,13 @@ export default function CartDrawer({ open, onClose }) {
 
         {cartItems.length > 0 && (
           <div className="p-5 border-t border-border">
+            <div className="flex justify-between mb-1">
+              <span className="font-semibold text-muted">Total (USD)</span>
+              <span className="font-bold text-xl text-text">{formatCurrency(cartTotal)}</span>
+            </div>
             <div className="flex justify-between mb-4">
-              <span className="font-semibold text-muted">Total</span>
-              <span className="font-bold text-xl text-text">
-                {formatCurrency(cartTotal)}
-              </span>
+              <span className="text-sm text-muted">Total (KES)</span>
+              <span className="text-sm text-muted">{formatKES(cartTotal)}</span>
             </div>
             <button
               onClick={() => { onClose(); navigate('/delivery') }}

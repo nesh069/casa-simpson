@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { formatCurrency } from '../utils/helpers'
+import { formatCurrency, formatKES } from '../utils/helpers'
 
 export default function RoomCard({ room }) {
   const navigate = useNavigate()
@@ -58,6 +58,9 @@ export default function RoomCard({ room }) {
               {formatCurrency(room.price)}
             </span>
             <span className="text-muted text-sm"> / night</span>
+            <p className="text-xs text-muted mt-0.5">
+              {formatKES(room.price)} / night
+            </p>
           </div>
           <button
             onClick={() => navigate(`/rooms/${room.id}`)}

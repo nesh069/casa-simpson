@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useCollection } from '../hooks/useFirestore'
 import MenuCard from '../components/MenuCard'
 import { useCart } from '../context/CartContext'
-import { formatCurrency } from '../utils/helpers'
+import { formatCurrency, formatKES } from '../utils/helpers'
 import PaymentModal from '../components/PaymentModal'
 import { FiShoppingBag } from 'react-icons/fi'
 
@@ -73,7 +73,10 @@ export default function Restaurant() {
               <span>{cartCount} item{cartCount > 1 ? 's' : ''}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="font-bold">{formatCurrency(cartTotal)}</span>
+              <div className="text-right">
+                <p className="font-bold leading-tight">{formatCurrency(cartTotal)}</p>
+                <p className="text-xs text-white/70 leading-tight">{formatKES(cartTotal)}</p>
+              </div>
               <span className="bg-white/20 text-white text-sm px-3 py-1 rounded-xl">
                 Pay Now →
               </span>

@@ -3,7 +3,7 @@ import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { useCollection } from '../hooks/useFirestore'
-import { formatCurrency, generateBookingRef } from '../utils/helpers'
+import { formatCurrency, formatKES, generateBookingRef } from '../utils/helpers'
 import { FiX, FiLock } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
@@ -86,16 +86,14 @@ export default function PaymentModal({
         <div className="p-6 space-y-5">
           <div className="bg-surface border border-border rounded-xl p-4 text-center">
             <p className="text-muted text-sm mb-1">Total Amount</p>
-            <p className="text-4xl font-bold text-text">
-              {formatCurrency(amount)}
-            </p>
-            <p className="text-xs text-muted mt-1 capitalize">{orderType} order</p>
+            <p className="text-4xl font-bold text-text">{formatCurrency(amount)}</p>
+            <p className="text-sm text-muted mt-1">{formatKES(amount)}</p>
+            <p className="text-xs text-muted/60 mt-1 capitalize">{orderType} order</p>
           </div>
 
           <div className="text-center space-y-1">
             <p className="text-muted text-sm">
-              Powered by{' '}
-              <span className="text-accent font-semibold">Flutterwave</span>
+              Powered by <span className="text-accent font-semibold">Flutterwave</span>
             </p>
             <p className="text-xs text-muted/60">
               Test card: 5531886652142950 · Exp: 09/32 · CVV: 564

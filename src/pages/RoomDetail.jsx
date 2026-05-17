@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { formatCurrency, getNights, generateBookingRef } from '../utils/helpers'
+import { formatCurrency, formatKES, getNights, generateBookingRef } from '../utils/helpers'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useFirestore'
 import PaymentModal from '../components/PaymentModal'
@@ -52,10 +52,7 @@ export default function RoomDetail() {
         <div>
           <p className="text-6xl mb-4">🏨</p>
           <p className="text-text text-xl font-semibold mb-2">Room not found</p>
-          <button
-            onClick={() => navigate('/rooms')}
-            className="mt-4 text-brand hover:underline"
-          >
+          <button onClick={() => navigate('/rooms')} className="mt-4 text-brand hover:underline">
             ← Back to Rooms
           </button>
         </div>
@@ -79,23 +76,23 @@ export default function RoomDetail() {
   }
 
   const handlePaymentSuccess = async () => {
-  const bookingData = {
-    roomId: room.id,
-    roomName: room.name,
-    roomImage: room.image,
-    userId: user.uid,
-    userEmail: user.email,
-    checkIn,
-    checkOut,
-    guests,
-    nights,
-    total,
-    ref: generateBookingRef(),
-    status: 'confirmed',
+    const bookingData = {
+      roomId: room.id,
+      roomName: room.name,
+      roomImage: room.image,
+      userId: user.uid,
+      userEmail: user.email,
+      checkIn,
+      checkOut,
+      guests,
+      nights,
+      total,
+      ref: generateBookingRef(),
+      status: 'confirmed',
+    }
+    await addDocument(bookingData)
+    navigate('/booking-confirmation', { state: { booking: bookingData } })
   }
-  await addDocument(bookingData)
-  navigate('/booking-confirmation', { state: { booking: bookingData } })
-}
 
   const typeColor = {
     single: 'bg-[#ff4757]/20 text-[#ff4757]',
@@ -116,12 +113,8 @@ export default function RoomDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <div>
             <div className="relative rounded-2xl overflow-hidden">
-              <img
-                src={room.image}
-                alt={room.name}
-                className="w-full h-80 object-cover"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-page/60 to-transparent" />
+              <img src={room.image} alt={room.name} className="w-full h-80 object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d1a]/60 to-transparent" />
             </div>
 
             <div className="mt-6">
@@ -147,9 +140,12 @@ export default function RoomDetail() {
 
           {/* Booking Panel */}
           <div className="bg-card border border-border rounded-2xl p-6 h-fit sticky top-24">
-            <div className="flex items-baseline gap-2 mb-6 pb-4 border-b border-border">
-              <span className="text-3xl font-bold text-text">{formatCurrency(room.price)}</span>
-              <span className="text-muted">/ night</span>
+            <div className="mb-6 pb-4 border-b border-border">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-text">{formatCurrency(room.price)}</span>
+                <span className="text-muted">/ night</span>
+              </div>
+              <p className="text-sm text-muted mt-1">{formatKES(room.price)} per night</p>
             </div>
 
             <div className="space-y-4 mb-6">
@@ -197,8 +193,12 @@ export default function RoomDetail() {
                   <span>{formatCurrency(total)}</span>
                 </div>
                 <div className="flex justify-between font-bold border-t border-border pt-2">
-                  <span className="text-text">Total</span>
+                  <span className="text-text">Total (USD)</span>
                   <span className="text-accent">{formatCurrency(total)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted">
+                  <span>Total (KES)</span>
+                  <span>{formatKES(total)}</span>
                 </div>
               </div>
             )}
