@@ -6,6 +6,8 @@ import {
   updateDoc,
   runTransaction,
   collection,
+  query,
+  where,
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore'
