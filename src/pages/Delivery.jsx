@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
-import DeliveryTracker from '../components/DeliveryTracker'
 import { FiPhone, FiShoppingCart, FiArrowLeft } from 'react-icons/fi'
 import { formatCurrency, formatKES } from '../utils/helpers'
 
