@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import toast from 'react-hot-toast'
 
-// Mock dependencies
 vi.mock('../context/AuthContext')
 vi.mock('../context/CartContext')
 vi.mock('react-hot-toast', () => ({
@@ -76,13 +75,10 @@ describe('Delivery Page', () => {
     expect(screen.getByText('Browse Menu')).toBeInTheDocument()
   })
 
-  it('shows contact details section with phone and address inputs', () => {
+  it('shows contact details section with phone input', () => {
     renderDelivery()
     expect(screen.getByText('📱 Contact Details')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('+254 712 345 678')).toBeInTheDocument()
-    expect(screen.getByText('Delivery Address')).toBeInTheDocument()
-    expect(screen.getByTestId('location-autocomplete')).toBeInTheDocument()
-    expect(screen.getByText(/Search for your location/)).toBeInTheDocument()
   })
 
   it('updates phone input on change', () => {
@@ -90,21 +86,6 @@ describe('Delivery Page', () => {
     const input = screen.getByPlaceholderText('+254 712 345 678')
     fireEvent.change(input, { target: { value: '+254723363961' } })
     expect(input).toHaveValue('+254723363961')
-  })
-
-  it('validates address is provided before placing order', () => {
-    useCart.mockReturnValue({
-      cartItems: [{ id: '1', name: 'Burger', price: 10, quantity: 1 }],
-      cartTotal: 10,
-      cartCount: 1,
-      clearCart: mockClearCart
-    })
-    renderDelivery()
-    fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
-      target: { value: '+254723363961' }
-    })
-    fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
-    expect(toast.error).toHaveBeenCalledWith('Please enter your delivery address')
   })
 
   it('shows order summary when cart has items', () => {
@@ -152,7 +133,7 @@ describe('Delivery Page', () => {
     expect(toast.error).toHaveBeenCalledWith('Please enter your phone number')
   })
 
-  it('validates phone number has at least 10 digits', () => {
+  it('validates phone number format', () => {
     useCart.mockReturnValue({
       cartItems: [{ id: '1', name: 'Burger', price: 10, quantity: 1 }],
       cartTotal: 10,
@@ -179,9 +160,6 @@ describe('Delivery Page', () => {
     fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
       target: { value: '+254712345678' }
     })
-    fireEvent.change(screen.getByTestId('location-autocomplete'), {
-      target: { value: '123 Main St' }
-    })
     fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
     expect(screen.getByTestId('payment-modal')).toBeInTheDocument()
   })
@@ -203,9 +181,6 @@ describe('Delivery Page', () => {
     fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
       target: { value: '+254723363961' }
     })
-    fireEvent.change(screen.getByTestId('location-autocomplete'), {
-      target: { value: '123 Main St, Nairobi' }
-    })
     fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
     expect(screen.getByTestId('payment-modal')).toBeInTheDocument()
     expect(screen.getByTestId('payment-amount')).toHaveTextContent('10')
@@ -221,9 +196,6 @@ describe('Delivery Page', () => {
     renderDelivery()
     fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
       target: { value: '+254723363961' }
-    })
-    fireEvent.change(screen.getByTestId('location-autocomplete'), {
-      target: { value: '123 Main St, Nairobi' }
     })
     fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
     fireEvent.click(screen.getByText('Cancel'))
@@ -241,17 +213,12 @@ describe('Delivery Page', () => {
     fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
       target: { value: '+254723363961' }
     })
-    fireEvent.change(screen.getByTestId('location-autocomplete'), {
-      target: { value: '123 Main St, Nairobi' }
-    })
     fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
     fireEvent.click(screen.getByText('Confirm Payment'))
 
     expect(await screen.findByText('Order Confirmed!')).toBeInTheDocument()
     expect(screen.getByText(/We'll call you at:/)).toBeInTheDocument()
     expect(screen.getByText('+254723363961')).toBeInTheDocument()
-    expect(screen.getByText(/Delivering to:/)).toBeInTheDocument()
-    expect(screen.getByText('123 Main St, Nairobi')).toBeInTheDocument()
     expect(screen.getByText('Back to Home')).toBeInTheDocument()
     expect(toast.success).toHaveBeenCalledWith('Order placed successfully!')
     expect(mockClearCart).toHaveBeenCalled()
@@ -276,7 +243,6 @@ describe('Delivery Page', () => {
       clearCart: mockClearCart
     })
     renderDelivery()
-    // Multiple $20 elements exist (item line + total), so use getAllByText
     expect(screen.getAllByText('$20').length).toBeGreaterThanOrEqual(2)
     expect(screen.getAllByText('KES 20').length).toBeGreaterThanOrEqual(2)
   })

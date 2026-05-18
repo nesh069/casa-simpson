@@ -56,18 +56,6 @@ vi.mock('react-hot-toast', () => ({
   }
 }))
 
-// Mock LocationAutocomplete
-vi.mock('../components/LocationAutocomplete', () => ({
-  default: ({ value, onChange }) => (
-    <input
-      data-testid="location-autocomplete"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="Enter your delivery address..."
-    />
-  )
-}))
-
 // Mock useAdmin
 vi.mock('../hooks/useAdmin', () => ({
   useAdmin: () => ({
