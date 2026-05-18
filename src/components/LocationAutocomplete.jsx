@@ -12,27 +12,20 @@ export default function LocationAutocomplete({ value, onChange, onSelect, placeh
   useEffect(() => {
     if (readyRef.current) return
 
-    const onLoad = () => {
-      readyRef.current = true
-      setMapsReady(true)
-    }
-    window.addEventListener('google-maps-loaded', onLoad)
-
     const check = setInterval(() => {
       if (typeof window.google?.maps?.places !== 'undefined') {
         readyRef.current = true
         setMapsReady(true)
         clearInterval(check)
       }
-    }, 500)
+    }, 200)
 
     const timeout = setTimeout(() => {
       if (!readyRef.current) setLoadError(true)
       clearInterval(check)
-    }, 15000)
+    }, 20000)
 
     return () => {
-      window.removeEventListener('google-maps-loaded', onLoad)
       clearInterval(check)
       clearTimeout(timeout)
     }
