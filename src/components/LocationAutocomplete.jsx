@@ -1,14 +1,36 @@
-import { useLoadScript } from '@react-google-maps/api'
+import { useState, useEffect } from 'react'
 import usePlacesAutocomplete from 'use-places-autocomplete'
 import { FiMapPin } from 'react-icons/fi'
 
-const libraries = ['places']
-
 export default function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries,
-  })
+  const [mapsReady, setMapsReady] = useState(
+    () => typeof window.google?.maps?.places !== 'undefined'
+  )
+  const [loadError, setLoadError] = useState(false)
+
+  useEffect(() => {
+    if (mapsReady) return
+
+    const onLoad = () => setMapsReady(true)
+    window.addEventListener('google-maps-loaded', onLoad)
+
+    const check = setInterval(() => {
+      if (typeof window.google?.maps?.places !== 'undefined') {
+        setMapsReady(true)
+        clearInterval(check)
+      }
+    }, 500)
+
+    setTimeout(() => {
+      if (!mapsReady) setLoadError(true)
+      clearInterval(check)
+    }, 15000)
+
+    return () => {
+      window.removeEventListener('google-maps-loaded', onLoad)
+      clearInterval(check)
+    }
+  }, [mapsReady])
 
   if (loadError) {
     return (
@@ -18,7 +40,7 @@ export default function LocationAutocomplete({ value, onChange, onSelect, placeh
     )
   }
 
-  if (!isLoaded) {
+  if (!mapsReady) {
     return (
       <div className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-muted animate-pulse">
         Loading location search...
