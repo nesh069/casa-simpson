@@ -1,11 +1,38 @@
 rules_version = '2';
-service cloud.cloudfirestore {
+service cloud.firestore {
   match /databases/{database}/documents {
+    // Users: can read their own document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Users can only read/write their own cart
+      match /cart/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // Bookings: users can read their own, create new ones, update their own
+    match /bookings/{bookingId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Rooms and menu: public read, admin-only write
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow write: if false;  // Only via Admin SDK / seed script
+    }
+
+    match /menu/{itemId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Reviews: public read, authenticated write
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null;
     }
   }
 }
