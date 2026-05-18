@@ -10,17 +10,29 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
 } from 'firebase/auth'
-import { auth } from '../firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { auth, db } from '../firebase'
 
 export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
+  const [userRole, setUserRole] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser)
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid))
+          setUserRole(userDoc.exists() ? userDoc.data().role || null : null)
+        } catch {
+          setUserRole(null)
+        }
+      } else {
+        setUserRole(null)
+      }
       setLoading(false)
     })
     return () => unsubscribe()
@@ -60,6 +72,8 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    userRole,
+    isAdmin: userRole === 'admin',
     loading,
     register,
     login,

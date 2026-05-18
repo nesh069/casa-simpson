@@ -1,8 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
+import AdminLayout from './components/AdminLayout'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Rooms from './pages/Rooms'
@@ -13,11 +14,14 @@ import Reviews from './pages/Reviews'
 import MyBookings from './pages/MyBookings'
 import BookingConfirmation from './pages/BookingConfirmation'
 import NotFound from './pages/NotFound'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminRooms from './pages/admin/AdminRooms'
+import AdminMenu from './pages/admin/AdminMenu'
+import AdminBookings from './pages/admin/AdminBookings'
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminReviews from './pages/admin/AdminReviews'
 
 export default function App() {
-  // NOTE: Data seeding removed from client-side.
-  // Run seedFirestore.js manually via Node.js or Firebase CLI when setting up the project.
-
   return (
     <div className="min-h-screen flex flex-col bg-page">
       <Navbar />
@@ -45,6 +49,32 @@ export default function App() {
             element={<ProtectedRoute><BookingConfirmation /></ProtectedRoute>}
           />
           <Route path="*" element={<NotFound />} />
+
+          {/* Admin routes */}
+          <Route
+            path="/admin"
+            element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>}
+          />
+          <Route
+            path="/admin/rooms"
+            element={<AdminRoute><AdminLayout><AdminRooms /></AdminLayout></AdminRoute>}
+          />
+          <Route
+            path="/admin/menu"
+            element={<AdminRoute><AdminLayout><AdminMenu /></AdminLayout></AdminRoute>}
+          />
+          <Route
+            path="/admin/bookings"
+            element={<AdminRoute><AdminLayout><AdminBookings /></AdminLayout></AdminRoute>}
+          />
+          <Route
+            path="/admin/orders"
+            element={<AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>}
+          />
+          <Route
+            path="/admin/reviews"
+            element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>}
+          />
         </Routes>
       </main>
       <Footer />

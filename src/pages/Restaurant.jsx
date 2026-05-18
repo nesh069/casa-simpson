@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useCollection } from '../hooks/useFirestore'
 import MenuCard from '../components/MenuCard'
 import { useCart } from '../context/CartContext'
 import { formatCurrency, formatKES } from '../utils/helpers'
 import PaymentModal from '../components/PaymentModal'
-import { FiShoppingBag } from 'react-icons/fi'
+import { FiShoppingBag, FiTruck, FiArrowRight } from 'react-icons/fi'
 
 const CATEGORIES = ['all', 'starters', 'mains', 'desserts', 'drinks']
 
@@ -29,6 +30,28 @@ export default function Restaurant() {
             Restaurant & Bar
           </h1>
           <p className="text-[#a4b0be]">Fine dining and craft drinks, crafted with care</p>
+        </div>
+
+        {/* Delivery callout */}
+        <div className="bg-gradient-to-r from-[#ff4757]/10 to-[#ff6b81]/5 border border-[#ff4757]/20 rounded-2xl p-5 mb-8">
+          <div className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+            <div className="w-12 h-12 bg-[#ff4757]/10 rounded-xl flex items-center justify-center shrink-0">
+              <FiTruck size={22} className="text-[#ff4757]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-[#f1f2f6]">Prefer to eat at home?</h3>
+              <p className="text-sm text-[#a4b0be] mt-0.5">
+                Add items to your cart, then head over to our delivery page to order from the comfort of your home.
+              </p>
+            </div>
+            <Link
+              to="/delivery"
+              className="flex items-center gap-2 bg-[#ff4757] hover:bg-[#ff6b81] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shrink-0"
+            >
+              Order Delivery
+              <FiArrowRight size={16} />
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-8">

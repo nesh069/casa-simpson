@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useAdmin } from '../hooks/useAdmin'
 import { useCart } from '../context/CartContext'
 import CartDrawer from './CartDrawer'
-import { FiShoppingCart, FiMenu, FiX, FiLogOut, FiUser, FiCalendar } from 'react-icons/fi'
+import { FiShoppingCart, FiMenu, FiX, FiLogOut, FiUser, FiCalendar, FiSettings } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { isAdmin } = useAdmin()
   const { cartCount } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
@@ -108,6 +110,21 @@ export default function Navbar() {
                     <FiCalendar size={18} />
                   </Link>
 
+                  {/* Admin icon (desktop) */}
+                  {user && isAdmin && (
+                    <Link
+                      to="/admin"
+                      title="Admin Panel"
+                      className={`p-2 rounded-full transition-colors ${
+                        location.pathname.startsWith('/admin')
+                          ? 'bg-brand/20 text-brand'
+                          : 'hover:bg-card text-muted hover:text-text'
+                      }`}
+                    >
+                      <FiSettings size={18} />
+                    </Link>
+                  )}
+
                   {/* Logout */}
                   <button
                     onClick={handleLogout}
@@ -189,6 +206,22 @@ export default function Navbar() {
                     <FiCalendar size={15} />
                     My Bookings
                   </Link>
+
+                  {/* Admin mobile link */}
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-lg transition-colors ${
+                        location.pathname.startsWith('/admin')
+                          ? 'bg-brand/10 text-brand font-semibold'
+                          : 'text-muted hover:bg-surface hover:text-text'
+                      }`}
+                    >
+                      <FiSettings size={15} />
+                      Admin Panel
+                    </Link>
+                  )}
 
                   {/* Logout mobile */}
                   <button

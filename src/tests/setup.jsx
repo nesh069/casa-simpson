@@ -63,6 +63,51 @@ vi.mock('@react-google-maps/api', () => ({
   useLoadScript: () => ({ isLoaded: true, loadError: null })
 }))
 
+// Mock use-places-autocomplete
+vi.mock('use-places-autocomplete', () => ({
+  default: () => ({
+    ready: true,
+    value: '',
+    suggestions: { status: 'OK', data: [] },
+    setValue: vi.fn(),
+    clearSuggestions: vi.fn(),
+  })
+}))
+
+// Mock LocationAutocomplete
+vi.mock('../components/LocationAutocomplete', () => ({
+  default: ({ value, onChange }) => (
+    <input
+      data-testid="location-autocomplete"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Enter your delivery address..."
+    />
+  )
+}))
+
+// Mock useAdmin
+vi.mock('../hooks/useAdmin', () => ({
+  useAdmin: () => ({
+    isAdmin: false,
+    userRole: null,
+    loading: false,
+    user: null,
+    canAccess: false,
+    isSuperAdmin: false,
+  })
+}))
+
+// Mock AdminRoute (just pass children through)
+vi.mock('../components/AdminRoute', () => ({
+  default: ({ children }) => children
+}))
+
+// Mock AdminLayout (just pass children through)
+vi.mock('../components/AdminLayout', () => ({
+  default: ({ children }) => <div data-testid="admin-layout">{children}</div>
+}))
+
 // Global mocks
 window.matchMedia = window.matchMedia || function() {
   return {

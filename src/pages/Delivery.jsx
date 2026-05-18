@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import PaymentModal from '../components/PaymentModal'
-import { FiPhone, FiShoppingCart, FiArrowLeft } from 'react-icons/fi'
+import LocationAutocomplete from '../components/LocationAutocomplete'
+import { FiPhone, FiShoppingCart, FiArrowLeft, FiMapPin } from 'react-icons/fi'
 import { formatCurrency, formatKES } from '../utils/helpers'
 
 export default function Delivery() {
@@ -13,6 +14,7 @@ export default function Delivery() {
   const navigate = useNavigate()
 
   const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
   const [showPayment, setShowPayment] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
 
@@ -28,6 +30,7 @@ export default function Delivery() {
     if (!phone.trim()) { toast.error('Please enter your phone number'); return }
     const digits = phone.replace(/\D/g, '')
     if (digits.length < 10) { toast.error('Please enter a valid phone number'); return }
+    if (!address.trim()) { toast.error('Please enter your delivery address'); return }
     if (cartCount === 0) { toast.error('Please add items from the menu first'); return }
     setShowPayment(true)
   }
@@ -42,7 +45,7 @@ export default function Delivery() {
             Food Delivery
           </h1>
           <p className="text-[#a4b0be]">
-            Enter your details and we'll deliver to you
+            Order from home and we'll bring your favourite dishes right to your door
           </p>
         </div>
 
@@ -57,8 +60,12 @@ export default function Delivery() {
               We'll call you at:{' '}
               <span className="text-[#f1f2f6] font-semibold">{phone}</span>
             </p>
+            <p className="text-[#a4b0be] text-sm mb-1">
+              Delivering to:{' '}
+              <span className="text-[#f1f2f6] font-semibold">{address}</span>
+            </p>
             <p className="text-[#a4b0be] text-sm mb-8">
-              Our driver will contact you to confirm your location.
+              Our driver will contact you to confirm.
             </p>
             <Link
               to="/"
@@ -107,6 +114,23 @@ export default function Delivery() {
               />
               <p className="text-xs text-[#a4b0be] mt-2">
                 Our driver will call you to confirm your delivery location
+              </p>
+            </div>
+
+            {/* Delivery address */}
+            <div className="bg-[#1a1a2e] border border-[#2a2a3e] rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-[#f1f2f6] mb-4">
+                <FiMapPin className="inline mr-1 text-[#ff4757]" size={16} />
+                Delivery Address
+              </h2>
+              <LocationAutocomplete
+                value={address}
+                onChange={(val) => setAddress(val)}
+                onSelect={(val) => setAddress(val)}
+                placeholder="Enter your delivery address..."
+              />
+              <p className="text-xs text-[#a4b0be] mt-2">
+                Search for your location or type it manually
               </p>
             </div>
 
@@ -181,7 +205,7 @@ export default function Delivery() {
         <PaymentModal
           amount={cartTotal}
           orderType="food"
-          deliveryAddress={phone}
+          deliveryAddress={address}
           onClose={() => setShowPayment(false)}
           onSuccess={handleOrderSuccess}
         />
