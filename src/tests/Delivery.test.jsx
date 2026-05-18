@@ -164,7 +164,26 @@ describe('Delivery Page', () => {
       target: { value: '123' }
     })
     fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
-    expect(toast.error).toHaveBeenCalledWith('Please enter a valid phone number')
+    expect(toast.error).toHaveBeenCalledWith('Use format: 0712345678 or +254712345678')
+  })
+
+  it('accepts international format +254...', () => {
+    useAuth.mockReturnValue({ user: { uid: 'test' } })
+    useCart.mockReturnValue({
+      cartItems: [{ id: '1', name: 'Burger', price: 10, quantity: 1 }],
+      cartTotal: 10,
+      cartCount: 1,
+      clearCart: mockClearCart
+    })
+    renderDelivery()
+    fireEvent.change(screen.getByPlaceholderText('+254 712 345 678'), {
+      target: { value: '+254712345678' }
+    })
+    fireEvent.change(screen.getByTestId('location-autocomplete'), {
+      target: { value: '123 Main St' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Place Order/ }))
+    expect(screen.getByTestId('payment-modal')).toBeInTheDocument()
   })
 
   it('does not show Place Order button when cart is empty', () => {

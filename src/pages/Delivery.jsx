@@ -28,8 +28,9 @@ export default function Delivery() {
   const handlePlaceOrder = () => {
     if (!user) { toast.error('Please sign in to place an order'); return }
     if (!phone.trim()) { toast.error('Please enter your phone number'); return }
-    const digits = phone.replace(/\D/g, '')
-    if (digits.length < 10) { toast.error('Please enter a valid phone number'); return }
+    const clean = phone.replace(/\s/g, '')
+    const valid = /^(07\d{8}|\+254\d{9})$/.test(clean)
+    if (!valid) { toast.error('Use format: 0712345678 or +254712345678'); return }
     if (!address.trim()) { toast.error('Please enter your delivery address'); return }
     if (cartCount === 0) { toast.error('Please add items from the menu first'); return }
     setShowPayment(true)
