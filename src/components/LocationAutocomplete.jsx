@@ -1,84 +1,68 @@
-import { useState, useEffect, useRef } from 'react'
-import usePlacesAutocomplete from 'use-places-autocomplete'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { FiMapPin } from 'react-icons/fi'
 
+const API_KEY = 'AIzaSyDZbzjGlkuB_yv8vohkhHmC3yWhsiQqM1I'
+
 export default function LocationAutocomplete({ value, onChange, onSelect, placeholder }) {
-  const [mapsReady, setMapsReady] = useState(
-    () => typeof window.google?.maps?.places !== 'undefined'
-  )
-  const [loadError, setLoadError] = useState(false)
-  const readyRef = useRef(mapsReady)
+  const [suggestions, setSuggestions] = useState([])
+  const [open, setOpen] = useState(false)
+  const [input, setInput] = useState(value || '')
+  const debounceRef = useRef(null)
+  const abortRef = useRef(null)
 
-  useEffect(() => {
-    if (readyRef.current) return
+  const fetchSuggestions = useCallback(async (query) => {
+    if (abortRef.current) abortRef.current.abort()
+    if (!query.trim()) { setSuggestions([]); return }
 
-    const check = setInterval(() => {
-      if (typeof window.google?.maps?.places !== 'undefined') {
-        readyRef.current = true
-        setMapsReady(true)
-        clearInterval(check)
-      }
-    }, 200)
+    const controller = new AbortController()
+    abortRef.current = controller
 
-    const timeout = setTimeout(() => {
-      if (!readyRef.current) setLoadError(true)
-      clearInterval(check)
-    }, 20000)
+    try {
+      const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.id',
+        },
+        body: JSON.stringify({ textQuery: query, maxResultCount: 5 }),
+        signal: controller.signal,
+      })
 
-    return () => {
-      clearInterval(check)
-      clearTimeout(timeout)
+      if (!res.ok) return
+      const data = await res.json()
+      setSuggestions(data.places || [])
+    } catch {
+      // aborted or network error
     }
   }, [])
 
-  if (loadError) {
-    return (
-      <div className="text-sm text-red-400">
-        Failed to load location search. Please type your address manually.
-      </div>
-    )
-  }
-
-  if (!mapsReady) {
-    return (
-      <div className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-muted animate-pulse">
-        Loading location search...
-      </div>
-    )
-  }
-
-  return (
-    <AutocompleteInput
-      value={value}
-      onChange={onChange}
-      onSelect={onSelect}
-      placeholder={placeholder}
-    />
-  )
-}
-
-function AutocompleteInput({ value, onChange, onSelect, placeholder }) {
-  const {
-    ready,
-    value: inputValue,
-    suggestions: { status, data },
-    setValue,
-    clearSuggestions,
-  } = usePlacesAutocomplete({
-    defaultValue: value || '',
-    debounce: 300,
-  })
-
   const handleInput = (e) => {
-    setValue(e.target.value)
-    if (onChange) onChange(e.target.value)
+    const val = e.target.value
+    setInput(val)
+    if (onChange) onChange(val)
+
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchSuggestions(val), 300)
   }
 
-  const handleSelect = ({ description }) => {
-    setValue(description, false)
-    clearSuggestions()
-    if (onSelect) onSelect(description)
+  const handleSelect = (place) => {
+    const addr = place.formattedAddress || place.displayName?.text || ''
+    setInput(addr)
+    setOpen(false)
+    if (onSelect) onSelect(addr)
   }
+
+  const handleFocus = () => {
+    if (suggestions.length > 0) setOpen(true)
+  }
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(debounceRef.current)
+      if (abortRef.current) abortRef.current.abort()
+    }
+  }, [])
 
   return (
     <div className="relative">
@@ -86,24 +70,27 @@ function AutocompleteInput({ value, onChange, onSelect, placeholder }) {
         <FiMapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand" />
         <input
           type="text"
-          value={inputValue}
+          value={input}
           onChange={handleInput}
-          disabled={!ready}
+          onFocus={handleFocus}
           placeholder={placeholder || 'Search for your address...'}
           className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-text placeholder-muted focus:outline-none focus:border-brand transition-colors"
         />
       </div>
 
-      {status === 'OK' && (
+      {open && suggestions.length > 0 && (
         <ul className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-          {data.map(({ place_id, description }) => (
+          {suggestions.map((place) => (
             <li
-              key={place_id}
-              onClick={() => handleSelect({ description })}
+              key={place.id}
+              onClick={() => handleSelect(place)}
               className="px-4 py-2.5 text-sm text-text hover:bg-surface cursor-pointer transition-colors border-b border-border last:border-0 flex items-center gap-2"
             >
               <FiMapPin size={14} className="text-muted shrink-0" />
-              {description}
+              <span>{place.displayName?.text}</span>
+              {place.formattedAddress && (
+                <span className="text-muted text-xs ml-1">— {place.formattedAddress}</span>
+              )}
             </li>
           ))}
         </ul>
