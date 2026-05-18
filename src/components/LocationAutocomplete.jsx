@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import usePlacesAutocomplete from 'use-places-autocomplete'
 import { FiMapPin } from 'react-icons/fi'
 
@@ -7,30 +7,36 @@ export default function LocationAutocomplete({ value, onChange, onSelect, placeh
     () => typeof window.google?.maps?.places !== 'undefined'
   )
   const [loadError, setLoadError] = useState(false)
+  const readyRef = useRef(mapsReady)
 
   useEffect(() => {
-    if (mapsReady) return
+    if (readyRef.current) return
 
-    const onLoad = () => setMapsReady(true)
+    const onLoad = () => {
+      readyRef.current = true
+      setMapsReady(true)
+    }
     window.addEventListener('google-maps-loaded', onLoad)
 
     const check = setInterval(() => {
       if (typeof window.google?.maps?.places !== 'undefined') {
+        readyRef.current = true
         setMapsReady(true)
         clearInterval(check)
       }
     }, 500)
 
-    setTimeout(() => {
-      if (!mapsReady) setLoadError(true)
+    const timeout = setTimeout(() => {
+      if (!readyRef.current) setLoadError(true)
       clearInterval(check)
     }, 15000)
 
     return () => {
       window.removeEventListener('google-maps-loaded', onLoad)
       clearInterval(check)
+      clearTimeout(timeout)
     }
-  }, [mapsReady])
+  }, [])
 
   if (loadError) {
     return (
