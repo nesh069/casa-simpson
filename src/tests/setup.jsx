@@ -56,24 +56,6 @@ vi.mock('react-hot-toast', () => ({
   }
 }))
 
-// Mock Google Maps
-vi.mock('@react-google-maps/api', () => ({
-  GoogleMap: ({ children }) => <div>{children}</div>,
-  Marker: () => <div>Marker</div>,
-  useLoadScript: () => ({ isLoaded: true, loadError: null })
-}))
-
-// Mock use-places-autocomplete
-vi.mock('use-places-autocomplete', () => ({
-  default: () => ({
-    ready: true,
-    value: '',
-    suggestions: { status: 'OK', data: [] },
-    setValue: vi.fn(),
-    clearSuggestions: vi.fn(),
-  })
-}))
-
 // Mock LocationAutocomplete
 vi.mock('../components/LocationAutocomplete', () => ({
   default: ({ value, onChange }) => (

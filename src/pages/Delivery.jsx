@@ -127,7 +127,6 @@ export default function Delivery() {
               <LocationAutocomplete
                 value={address}
                 onChange={(val) => setAddress(val)}
-                onSelect={(val) => setAddress(val)}
                 placeholder="Enter your delivery address..."
               />
               <p className="text-xs text-[#a4b0be] mt-2">
