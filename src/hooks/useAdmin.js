@@ -1,7 +1,7 @@
 import { useAuth } from '../context/AuthContext'
 
 export function useAdmin() {
-  const { user, userRole, isAdmin, loading } = useAuth()
+  const { user, userRole, isAdmin, loading, refreshRole } = useAuth()
 
   return {
     isAdmin,
@@ -10,5 +10,6 @@ export function useAdmin() {
     user,
     isSuperAdmin: userRole === 'superadmin',
     canAccess: isAdmin || userRole === 'superadmin',
+    refreshRole,
   }
 }

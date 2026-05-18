@@ -70,6 +70,16 @@ export function AuthProvider({ children }) {
     return signInWithPhoneNumber(auth, phoneNumber, appVerifier)
   }
 
+  const refreshRole = async () => {
+    if (!user) return
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid))
+      setUserRole(userDoc.exists() ? userDoc.data().role || null : null)
+    } catch {
+      setUserRole(null)
+    }
+  }
+
   const value = {
     user,
     userRole,
@@ -78,6 +88,7 @@ export function AuthProvider({ children }) {
     register,
     login,
     logout,
+    refreshRole,
     signInWithGoogle,
     signInWithGithub,
     setupPhoneRecaptcha,
